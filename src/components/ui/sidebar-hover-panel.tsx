@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { PopoverContent } from "@/components/ui/popover";
 import { navItemClasses } from "@/components/ui/sidebar";
 
-// Geometry from trading-dashboard; state colors follow the shared navigation tokens.
+// Preserve the source sidebar geometry; state colors use shared navigation tokens.
 export function SidebarHoverButton({ className, ...props }: React.ComponentProps<typeof Button>) {
   return (
     <Button

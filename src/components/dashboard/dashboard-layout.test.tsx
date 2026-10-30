@@ -15,7 +15,12 @@ import Dashboard from "@/pages/Dashboard";
 import { ProjectWorkspace } from "./project-workspace";
 import DashboardActivity from "@/pages/DashboardActivity";
 import DashboardSettings from "@/pages/DashboardSettings";
-import { SettingsAppearance, SettingsInvoices, SettingsMembers, SettingsPlans } from "@/pages/DashboardSettingsSections";
+import {
+  SettingsAppearance,
+  SettingsInvoices,
+  SettingsMembers,
+  SettingsPlans,
+} from "@/pages/DashboardSettingsSections";
 import { DashboardLayout } from "./dashboard-layout";
 import { WORKSPACE_STORAGE_KEY, readWorkspace } from "./workspace";
 import { PROJECTS_STORAGE_KEY } from "./projects";
@@ -54,13 +59,22 @@ it("opens the collapsed rail across the edge-to-panel gap and closes after leavi
   const { container } = render(<WorkspaceApp />);
   await user.click(screen.getByRole("button", { name: "사이드바 토글" }));
   const edge = screen.getByRole("button", { name: "빠른 메뉴 열기" });
-  const rail = container.querySelector<HTMLElement>('[data-slot="sidebar-hover-panel"]')!;
+  const rail = container.querySelector<HTMLElement>(
+    '[data-slot="sidebar-hover-panel"]',
+  )!;
   const offcanvas = container.querySelector('[data-slot="sidebar-container"]')!;
   expect(offcanvas).toHaveAttribute("inert");
   expect(offcanvas).toHaveAttribute("aria-hidden", "true");
   expect(rail).toHaveAttribute("inert");
-  expect(rail).toHaveClass("transition-transform", "duration-250", "ease-[cubic-bezier(0.25,0.1,0.25,1)]", "data-[state=closed]:-translate-x-[150%]");
-  expect(rail.className).not.toMatch(/transition-\[transform,opacity\]|opacity-0/);
+  expect(rail).toHaveClass(
+    "transition-transform",
+    "duration-250",
+    "ease-[cubic-bezier(0.25,0.1,0.25,1)]",
+    "data-[state=closed]:-translate-x-[150%]",
+  );
+  expect(rail.className).not.toMatch(
+    /transition-\[transform,opacity\]|opacity-0/,
+  );
   vi.useFakeTimers();
   fireEvent.pointerEnter(edge, { pointerType: "mouse" });
   expect(rail).toHaveAttribute("data-state", "open");
@@ -82,7 +96,9 @@ it("uses the source edge handoff delay and clears tooltips before the rail exits
   const { container } = render(<WorkspaceApp />);
   await user.click(screen.getByRole("button", { name: "사이드바 토글" }));
   const edge = screen.getByRole("button", { name: "빠른 메뉴 열기" });
-  const rail = container.querySelector<HTMLElement>('[data-slot="sidebar-hover-panel"]')!;
+  const rail = container.querySelector<HTMLElement>(
+    '[data-slot="sidebar-hover-panel"]',
+  )!;
   vi.useFakeTimers();
   fireEvent.pointerEnter(edge, { pointerType: "mouse" });
   fireEvent.pointerLeave(edge);
@@ -110,7 +126,7 @@ it("supports keyboard rail navigation, Escape, and route changes", async () => {
   expect(
     within(screen.getByRole("navigation", { name: "빠른 탐색" })).getByRole(
       "link",
-      { name: "검증 콘솔" },
+      { name: "프로젝트" },
     ),
   ).toHaveFocus();
   await user.keyboard("{Escape}");
@@ -136,7 +152,9 @@ it("holds the rail open for its shared account popover and dismisses both with E
   expect(
     within(rail).queryByRole("link", { name: "워크스페이스 설정" }),
   ).not.toBeInTheDocument();
-  const accountTrigger = within(rail).getByRole("button", { name: "계정 메뉴" });
+  const accountTrigger = within(rail).getByRole("button", {
+    name: "계정 메뉴",
+  });
   await user.click(accountTrigger);
   const account = screen.getByRole("dialog", { name: "계정 설정" });
   expect(accountTrigger).toHaveFocus();
@@ -216,7 +234,10 @@ function WorkspaceApp({ path = "/dashboard" }: { path?: string }) {
             <Route path="settings/members" element={<SettingsMembers />} />
             <Route path="settings/plans" element={<SettingsPlans />} />
             <Route path="settings/invoices" element={<SettingsInvoices />} />
-            <Route path="settings/appearance" element={<SettingsAppearance />} />
+            <Route
+              path="settings/appearance"
+              element={<SettingsAppearance />}
+            />
           </Route>
         </Routes>
       </MemoryRouter>
@@ -348,23 +369,40 @@ it("shows the latest stored change per project in timestamp order", () => {
   expect(updates[1]).toHaveTextContent("만들었습니다");
 });
 
-
 it("replaces workspace navigation with settings sections and restores it on return", async () => {
   const user = userEvent.setup();
   render(<WorkspaceApp path="/dashboard/settings" />);
-  expect(screen.queryByRole("link", { name: "최근 변경" })).not.toBeInTheDocument();
-  expect(screen.queryByRole("button", { name: "워크스페이스 선택" })).not.toBeInTheDocument();
-  expect(screen.getByRole("link", { name: "일반" })).toHaveAttribute("aria-current", "page");
-  const settingsNav = within(screen.getByRole("navigation", { name: "설정 탐색" }));
+  expect(
+    screen.queryByRole("link", { name: "최근 변경" }),
+  ).not.toBeInTheDocument();
+  expect(
+    screen.queryByRole("button", { name: "워크스페이스 선택" }),
+  ).not.toBeInTheDocument();
+  expect(screen.getByRole("link", { name: "일반" })).toHaveAttribute(
+    "aria-current",
+    "page",
+  );
+  const settingsNav = within(
+    screen.getByRole("navigation", { name: "설정 탐색" }),
+  );
   for (const title of ["멤버", "요금제", "청구서", "화면 설정"]) {
     await user.click(settingsNav.getByRole("link", { name: title }));
-    expect(screen.getByRole("heading", { name: title, level: 1 })).toBeInTheDocument();
-    expect(settingsNav.getByRole("link", { name: title })).toHaveAttribute("aria-current", "page");
+    expect(
+      screen.getByRole("heading", { name: title, level: 1 }),
+    ).toBeInTheDocument();
+    expect(settingsNav.getByRole("link", { name: title })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
     expect(document.title).toBe(`${title} | OSSGuard`);
   }
-  expect(screen.queryByRole("button", { name: "Blue accent" })).not.toBeInTheDocument();
+  expect(
+    screen.queryByRole("button", { name: "Blue accent" }),
+  ).not.toBeInTheDocument();
   await user.click(screen.getByRole("link", { name: "돌아가기" }));
-  expect(screen.getByRole("heading", { name: "업데이트 검증", level: 1 })).toBeInTheDocument();
+  expect(
+    screen.getByRole("heading", { name: "프로젝트", level: 1 }),
+  ).toBeInTheDocument();
   expect(screen.getByRole("link", { name: "최근 변경" })).toBeInTheDocument();
   expect(screen.queryByRole("link", { name: "일반" })).not.toBeInTheDocument();
 });
@@ -375,14 +413,127 @@ it("uses the same settings destinations in the collapsed hover rail", async () =
   expect(screen.getByRole("button", { name: "멤버 초대" })).toBeDisabled();
   await user.click(screen.getByRole("button", { name: "사이드바 토글" }));
   await user.click(screen.getByRole("button", { name: "빠른 메뉴 열기" }));
-  expect(screen.queryByRole("link", { name: "최근 변경" })).not.toBeInTheDocument();
+  expect(
+    screen.queryByRole("link", { name: "최근 변경" }),
+  ).not.toBeInTheDocument();
   await user.click(screen.getByRole("link", { name: "요금제" }));
-  expect(screen.getByRole("heading", { name: "요금제", level: 1 })).toBeInTheDocument();
+  expect(
+    screen.getByRole("heading", { name: "요금제", level: 1 }),
+  ).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "요금제 선택" })).toBeDisabled();
   expect(screen.getByRole("button", { name: "결제 정보 관리" })).toBeDisabled();
   await user.click(screen.getByRole("button", { name: "빠른 메뉴 열기" }));
   await user.click(screen.getByRole("link", { name: "돌아가기" }));
-  expect(screen.getByRole("heading", { name: "업데이트 검증", level: 1 })).toBeInTheDocument();
+  expect(
+    screen.getByRole("heading", { name: "프로젝트", level: 1 }),
+  ).toBeInTheDocument();
 });
 
+it("uses sidebar query navigation without resetting pending inputs or confirmation", async () => {
+  const user = userEvent.setup();
+  render(<WorkspaceApp path="/dashboard?project=order-service" />);
+  const nav = within(
+    screen.getByRole("navigation", { name: "워크스페이스 탐색" }),
+  );
+  expect(nav.getByRole("link", { name: "개요" })).toHaveAttribute(
+    "aria-current",
+    "page",
+  );
+  await user.click(nav.getByRole("link", { name: "업무 테스트" }));
+  expect(
+    screen.getByRole("heading", { name: "업무 테스트", level: 1 }),
+  ).toBeInTheDocument();
+  expect(nav.getByRole("link", { name: "개요" })).not.toHaveAttribute(
+    "aria-current",
+  );
+  await user.clear(
+    screen.getByLabelText("T01 · 정상 주문 / 기대 배송 요청 횟수"),
+  );
+  await user.type(
+    screen.getByLabelText("T01 · 정상 주문 / 기대 배송 요청 횟수"),
+    "0",
+  );
+  await user.click(nav.getByRole("link", { name: "실행 설정" }));
+  expect(document.title).toBe("실행 설정 | OSSGuard");
+  await user.click(nav.getByRole("link", { name: "업무 테스트" }));
+  expect(
+    screen.getByLabelText("T01 · 정상 주문 / 기대 배송 요청 횟수"),
+  ).toHaveValue("0");
+  expect(screen.getByText("검토 필요")).toBeInTheDocument();
+  expect(nav.getByRole("link", { name: "업무 테스트" })).toHaveAttribute(
+    "aria-current",
+    "page",
+  );
+  expect(screen.queryByRole("tablist")).not.toBeInTheDocument();
+});
 
+it("keeps the workspace catalog separate from selected-project navigation", async () => {
+  const user = userEvent.setup();
+  render(<WorkspaceApp path="/dashboard?mode=drafts" />);
+  expect(
+    screen.getByRole("heading", { name: "프로젝트", level: 1 }),
+  ).toBeInTheDocument();
+  expect(
+    screen.queryByRole("link", { name: "업무 테스트" }),
+  ).not.toBeInTheDocument();
+  await user.click(screen.getByRole("link", { name: "프로젝트 열기" }));
+  expect(
+    screen.getByRole("heading", { name: "주문 처리 서비스", level: 1 }),
+  ).toBeInTheDocument();
+  const nav = within(
+    screen.getByRole("navigation", { name: "워크스페이스 탐색" }),
+  );
+  expect(nav.getByRole("link", { name: "개요" })).toHaveAttribute(
+    "aria-current",
+    "page",
+  );
+  await user.click(nav.getByRole("link", { name: "프로젝트" }));
+  expect(
+    screen.queryByRole("link", { name: "업무 테스트" }),
+  ).not.toBeInTheDocument();
+});
+
+it("takes an arbitrary new project through rules, input review, confirmation and an honest comparison preview", async () => {
+  const user = userEvent.setup();
+  render(<WorkspaceApp path="/dashboard?mode=drafts" />);
+  await user.click(screen.getByRole("button", { name: "새 프로젝트" }));
+  await user.type(screen.getByLabelText("프로젝트 이름"), "문서 검색 검증");
+  await user.click(screen.getByRole("button", { name: "프로젝트 만들기" }));
+  expect(
+    screen.queryByRole("button", { name: "Node-RED 샘플로 채우기" }),
+  ).not.toBeInTheDocument();
+  fireEvent.change(screen.getByLabelText("공개 저장소 URL"), {
+    target: { value: "https://github.com/team/search-service" },
+  });
+  fireEvent.change(screen.getByLabelText("PyPI 패키지"), {
+    target: { value: "pydantic" },
+  });
+  fireEvent.change(screen.getByLabelText("목표 버전 B"), {
+    target: { value: "2.12.5" },
+  });
+  fireEvent.change(screen.getByLabelText("테스트 기본 경로"), {
+    target: { value: "POST /search" },
+  });
+  await user.click(screen.getByRole("button", { name: "다음: 테스트 정의" }));
+  fireEvent.change(screen.getByLabelText("업무 규칙"), {
+    target: { value: "색인한 문서가 검색되어야 한다" },
+  });
+  await user.click(
+    screen.getByRole("button", { name: "규칙으로 테스트 초안 만들기" }),
+  );
+  expect(
+    screen.getByRole("button", { name: "테스트 확정하고 실행 준비" }),
+  ).toBeDisabled();
+  fireEvent.change(screen.getByLabelText("선행 조건·테스트 입력"), {
+    target: { value: 'POST /search {"q":"guide"}' },
+  });
+  await user.click(
+    screen.getByRole("button", { name: "테스트 확정하고 실행 준비" }),
+  );
+  expect(screen.getByRole("button", { name: "서버에 등록" })).toBeEnabled();
+  await user.click(screen.getByRole("button", { name: "비교 화면 미리보기" }));
+  expect(screen.getByText("실행 전 비교 미리보기")).toBeInTheDocument();
+  expect(screen.getByText("확정한 기대 동작")).toBeInTheDocument();
+  expect(screen.getAllByText("실행 전 · 호출 기록 없음")).toHaveLength(2);
+  expect(screen.queryByText("회귀 의심")).not.toBeInTheDocument();
+});

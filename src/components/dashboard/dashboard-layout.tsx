@@ -9,10 +9,24 @@ import {
   type Workspace,
 } from "./workspace";
 import { WorkspaceAccountMenu } from "./workspace-account-menu";
-import { workspaceNavigation as navigation } from "./workspace-navigation";
+import {
+  getWorkspaceNavigationGroups,
+  isWorkspaceNavigationActive,
+} from "./workspace-navigation";
 import { FloatingNavPanel } from "./floating-nav-panel";
-import { isSettingsPath, settingsNavigation, settingsNavigationGroups, workspaceReturn } from "./settings-navigation";
+import {
+  isSettingsPath,
+  settingsNavigation,
+  settingsNavigationGroups,
+  workspaceReturn,
+} from "./settings-navigation";
 import { cn } from "@/lib/utils";
+import { selectedProject } from "@/components/ossguard/demo-project";
+import { projectHref } from "@/components/ossguard/model";
+import {
+  BackendProvider,
+  useBackend,
+} from "@/components/ossguard/backend-context";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -61,7 +75,8 @@ export function useWorkspace() {
 }
 
 function WorkspaceNavigationContent({ workspace }: { workspace: Workspace }) {
-  const { pathname } = useLocation();
+  const { projects: remoteProjects, api } = useBackend();
+  const { pathname, search } = useLocation();
   const settings = isSettingsPath(pathname);
   const { setOpenMobile } = useSidebar();
   const [workspaceOpen, setWorkspaceOpen] = useState(false);
@@ -83,32 +98,40 @@ function WorkspaceNavigationContent({ workspace }: { workspace: Workspace }) {
                   <span>{workspaceReturn.title}</span>
                 </Link>
               </SidebarMenuButton>
-            ) : <DropdownMenu open={workspaceOpen} onOpenChange={setWorkspaceOpen}>
-              <DropdownMenuTrigger asChild>
-                <SidebarMenuButton
-                  className="h-10 group/header"
-                  isActive={workspaceOpen}
-                  aria-label="워크스페이스 선택"
-                >
-                  <DashboardBrandIdentity name={workspace.name} />
-                </SidebarMenuButton>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-56">
-                <DropdownMenuLabel>워크스페이스</DropdownMenuLabel>
-                <DropdownMenuGroup>
-                  <DropdownMenuItem onSelect={closeMenus}>
-                    <Check />
-                    <span className="truncate">{workspace.name}</span>
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>}
+            ) : (
+              <DropdownMenu
+                open={workspaceOpen}
+                onOpenChange={setWorkspaceOpen}
+              >
+                <DropdownMenuTrigger asChild>
+                  <SidebarMenuButton
+                    className="h-10 group/header"
+                    isActive={workspaceOpen}
+                    aria-label="워크스페이스 선택"
+                  >
+                    <DashboardBrandIdentity name={workspace.name} />
+                  </SidebarMenuButton>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-56">
+                  <DropdownMenuLabel>워크스페이스</DropdownMenuLabel>
+                  <DropdownMenuGroup>
+                    <DropdownMenuItem onSelect={closeMenus}>
+                      <Check />
+                      <span className="truncate">{workspace.name}</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
         <nav aria-label={settings ? "설정 탐색" : "워크스페이스 탐색"}>
-          {(settings ? settingsNavigationGroups : [{ title: "워크스페이스", items: navigation }]).map(group => (
+          {(settings
+            ? settingsNavigationGroups
+            : getWorkspaceNavigationGroups(search, pathname, remoteProjects, !!api)
+          ).map((group) => (
             <SidebarGroup key={group.title}>
               <SidebarGroupLabel>{group.title}</SidebarGroupLabel>
               <SidebarGroupContent>
@@ -118,12 +141,20 @@ function WorkspaceNavigationContent({ workspace }: { workspace: Workspace }) {
                       <SidebarMenuButton
                         asChild
                         variant="product"
-                        isActive={pathname === href}
+                        isActive={isWorkspaceNavigationActive(
+                          href,
+                          pathname,
+                          search,
+                        )}
                         className="h-auto"
                       >
                         <Link
                           to={href}
-                          aria-current={pathname === href ? "page" : undefined}
+                          aria-current={
+                            isWorkspaceNavigationActive(href, pathname, search)
+                              ? "page"
+                              : undefined
+                          }
                           onClick={closeMenus}
                         >
                           <Icon />
@@ -177,18 +208,46 @@ function WorkspaceNavigation({ workspace }: { workspace: Workspace }) {
   );
 }
 function WorkspaceChrome() {
-  const { pathname } = useLocation();
+  const { projects: remoteProjects, api } = useBackend();
+  const { pathname, search } = useLocation();
   const settings = isSettingsPath(pathname);
+  const project =
+    pathname === "/dashboard"
+      ? (selectedProject(search) ??
+        remoteProjects.find(
+          (p) => p.id === new URLSearchParams(search).get("project"),
+        ))
+      : undefined;
   const { state: sidebarState, isMobile } = useSidebar();
   const contentRef = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
     if (contentRef.current) contentRef.current.scrollTop = 0;
-  }, [pathname]);
+  }, [pathname, search]);
   const page =
     pathname === "/dashboard/settings"
       ? "워크스페이스 설정"
-      : ([...navigation, ...settingsNavigation].find((item) => item.href === pathname)?.title ??
-        "페이지를 찾을 수 없습니다");
+      : pathname.startsWith("/validations/")
+        ? "검증 결과"
+        : pathname === "/dashboard" &&
+            new URLSearchParams(search).has("project")
+          ? ({
+              overview: "개요",
+              runs: "검증 실행",
+              setup: "실행 설정",
+              tests: "업무 테스트",
+              results: "검증 결과",
+            }[new URLSearchParams(search).get("tab") ?? "overview"] ?? "개요")
+          : ([
+              ...getWorkspaceNavigationGroups(
+                search,
+                pathname,
+                remoteProjects,
+                !!api,
+              ).flatMap((group) => group.items),
+              ...settingsNavigation,
+            ].find((item) =>
+              isWorkspaceNavigationActive(item.href, pathname, search),
+            )?.title ?? "페이지를 찾을 수 없습니다");
   const [state, setState] = useState(() => {
     try {
       return { workspace: readWorkspace(), error: null as string | null };
@@ -217,7 +276,7 @@ function WorkspaceChrome() {
     <div className="relative flex h-dvh min-h-0 w-full overflow-hidden bg-surface-canvas">
       <WorkspaceNavigation workspace={state.workspace} />
       {sidebarState === "collapsed" && !isMobile && (
-        <FloatingNavPanel key={pathname} />
+        <FloatingNavPanel key={pathname + search} />
       )}
       <SidebarInset className="min-h-0 min-w-0">
         <header className="flex h-13 shrink-0 items-center gap-3 border-b border-boundary-subtle px-4">
@@ -234,12 +293,30 @@ function WorkspaceChrome() {
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator className="hidden sm:block" />
-              {settings && pathname !== "/dashboard/settings" && <>
-                <BreadcrumbItem className="hidden sm:inline-flex">
-                  <BreadcrumbLink asChild><Link to="/dashboard/settings">워크스페이스 설정</Link></BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator className="hidden sm:block" />
-              </>}
+              {project && (
+                <>
+                  <BreadcrumbItem className="hidden min-w-0 md:inline-flex">
+                    <BreadcrumbLink asChild>
+                      <Link to={projectHref(project.id)}>
+                        <span className="block max-w-40 truncate">
+                          {project.name}
+                        </span>
+                      </Link>
+                    </BreadcrumbLink>
+                  </BreadcrumbItem>
+                  <BreadcrumbSeparator className="hidden md:block" />
+                </>
+              )}
+              {settings && pathname !== "/dashboard/settings" && (
+                <>
+                  <BreadcrumbItem className="hidden sm:inline-flex">
+                    <BreadcrumbLink asChild>
+                      <Link to="/dashboard/settings">워크스페이스 설정</Link>
+                    </BreadcrumbLink>
+                  </BreadcrumbItem>
+                  <BreadcrumbSeparator className="hidden sm:block" />
+                </>
+              )}
               <BreadcrumbItem className="min-w-0">
                 <BreadcrumbPage>
                   <span className="block truncate">{page}</span>
@@ -250,9 +327,14 @@ function WorkspaceChrome() {
         </header>
         <div
           ref={contentRef}
-          className="min-h-0 flex-1 overflow-y-auto px-5 py-7 sm:px-8 sm:py-8 lg:px-10"
+          className="min-h-0 min-w-0 flex-1 overflow-y-auto px-5 py-7 sm:px-8 sm:py-8 lg:px-10"
         >
-          <div className={cn("mx-auto w-full", settings ? "max-w-4xl" : "max-w-6xl")}>
+          <div
+            className={cn(
+              "mx-auto w-full",
+              settings ? "max-w-4xl" : "max-w-6xl",
+            )}
+          >
             <Outlet
               context={{ ...state, saveWorkspace } satisfies WorkspaceContext}
             />
@@ -264,9 +346,10 @@ function WorkspaceChrome() {
 }
 export function DashboardLayout() {
   return (
-    <SidebarProvider className="h-dvh min-h-0">
-      <WorkspaceChrome />
-    </SidebarProvider>
+    <BackendProvider>
+      <SidebarProvider className="h-dvh min-h-0">
+        <WorkspaceChrome />
+      </SidebarProvider>
+    </BackendProvider>
   );
 }
-

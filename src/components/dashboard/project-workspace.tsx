@@ -74,6 +74,9 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { readProjects, writeProjects, type Project } from "./projects";
+import { Link } from "react-router-dom";
+import { validationProjects } from "@/components/ossguard/demo-project";
+import { projectHref } from "@/components/ossguard/model";
 
 type ProjectValues = Pick<Project, "name" | "description">;
 const saveError =
@@ -127,7 +130,7 @@ function ProjectEditor({
                 setName(event.target.value);
                 setNameError(false);
               }}
-              placeholder="예: 브랜드 웹사이트"
+              placeholder="예: 문서 검색 서비스"
               required
               maxLength={80}
               aria-invalid={nameError || undefined}
@@ -205,7 +208,13 @@ function ProjectEditor({
   );
 }
 
-export function ProjectWorkspace() {
+export function ProjectWorkspace({
+  includeDemo = false,
+  onCreated,
+}: {
+  includeDemo?: boolean;
+  onCreated?: (id: string) => void;
+}) {
   const [store, setStore] = useState(() => {
     try {
       return { projects: readProjects(), error: null as string | null };
@@ -275,6 +284,7 @@ export function ProjectWorkspace() {
       toast.success(
         existing ? "프로젝트를 수정했습니다." : "프로젝트를 만들었습니다.",
       );
+      if (!existing) onCreated?.(project.id);
     }
     return error;
   }
@@ -290,7 +300,7 @@ export function ProjectWorkspace() {
     <div className="flex flex-col gap-7">
       <WorkspacePageHeader
         title="프로젝트"
-        description="워크스페이스의 웹사이트 프로젝트를 만들고 관리하세요."
+        description="GitHub 의존성 업데이트의 빌드·업무 결과를 검증합니다."
         actions={
           <Button
             ref={createRef}
@@ -301,9 +311,35 @@ export function ProjectWorkspace() {
           </Button>
         }
       />
+      {includeDemo && (
+        <section aria-label="시연 프로젝트" className="flex flex-col gap-3">
+          <h2 className="type-heading-sm">화면 예시</h2>
+          {validationProjects.map((project) => (
+            <Card key={project.id} variant="panel">
+              <CardContent className="flex flex-wrap items-center justify-between gap-4 p-4 md:p-4">
+                <div className="flex min-w-0 flex-wrap items-center gap-3">
+                  <Badge variant="outline">Python / uv</Badge>
+                  <span className="type-label-md">{project.name}</span>
+                  <span className="type-body-sm text-interface-secondary">
+                    {project.update?.packageName} {project.update?.locked} →{" "}
+                    {project.update?.targetVersion}
+                  </span>
+                  <Badge variant="muted">실제 실행 아님</Badge>
+                </div>
+                <Button variant="outline" asChild>
+                  <Link to={projectHref(project.id)}>
+                    프로젝트 열기
+                    <ArrowUpRight data-icon="inline-end" />
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
+        </section>
+      )}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="flex items-center gap-2 type-label-lg text-interface-contrast">
-          전체 프로젝트{" "}
+          {includeDemo ? "내 프로젝트" : "전체 프로젝트"}{" "}
           <span className="type-label-md text-interface-subtle">
             {store.projects.length}
           </span>
@@ -393,7 +429,7 @@ export function ProjectWorkspace() {
                       </div>
                     </TableCell>
                     <TableCell className="hidden sm:table-cell">
-                      <Badge variant="muted">초안</Badge>
+                      <Badge variant="muted">로컬 저장</Badge>
                     </TableCell>
                     <TableCell className="hidden lg:table-cell">
                       <time dateTime={project.updatedAt}>
@@ -410,7 +446,14 @@ export function ProjectWorkspace() {
                       </time>
                     </TableCell>
                     <TableCell>
-                      <div className="flex justify-end">
+                      <div className="flex justify-end gap-2">
+                        {includeDemo && (
+                          <Button asChild variant="outline" size="sm">
+                            <Link to={projectHref(project.id)}>
+                              프로젝트 열기
+                            </Link>
+                          </Button>
+                        )}
                         <Button
                           variant="ghost"
                           size="icon-sm"
@@ -440,14 +483,6 @@ export function ProjectWorkspace() {
                 variant="panel"
                 className="flex min-w-0 flex-col overflow-hidden"
               >
-                <div
-                  className="flex aspect-video items-center justify-center border-b border-boundary-subtle bg-surface-inset"
-                  aria-hidden="true"
-                >
-                  <span className="type-display-md text-primary">
-                    {Array.from(project.name).slice(0, 2).join("")}
-                  </span>
-                </div>
                 <CardHeader className="px-5 py-5 md:px-5">
                   <div className="flex min-w-0 items-center justify-between gap-3">
                     <CardTitle className="min-w-0">
@@ -455,17 +490,23 @@ export function ProjectWorkspace() {
                         {project.name}
                       </span>
                     </CardTitle>
-                    <Badge variant="muted">초안</Badge>
+                    <Badge variant="muted">로컬 저장</Badge>
                   </div>
                 </CardHeader>
                 <CardContent className="px-5 pb-5 md:px-5 md:pb-5">
                   <CardDescription>
                     <span className="line-clamp-2 min-h-10">
-                      {project.description || "설명 없음"}
+                      {project.description ||
+                        "검증할 대상과 업무 테스트를 설정하세요."}
                     </span>
                   </CardDescription>
                 </CardContent>
-                <CardFooter className="justify-between gap-3 px-5 py-3 md:px-5 md:py-3">
+                <CardFooter className="flex-wrap justify-between gap-3 px-5 py-3 md:px-5 md:py-3">
+                  {includeDemo && (
+                    <Button asChild variant="outline" size="sm">
+                      <Link to={projectHref(project.id)}>프로젝트 열기</Link>
+                    </Button>
+                  )}
                   <time
                     className="type-body-xs text-interface-subtle"
                     dateTime={project.updatedAt}
@@ -490,7 +531,7 @@ export function ProjectWorkspace() {
           </div>
         )
       ) : (
-        <Empty variant="panel" className="min-h-80">
+        <Empty variant="panel" className="min-h-48">
           <EmptyHeader>
             <EmptyMedia variant="icon">
               {query ? <Search /> : <FolderOpen />}
@@ -501,7 +542,7 @@ export function ProjectWorkspace() {
             <EmptyDescription>
               {query
                 ? "다른 이름이나 설명으로 검색해 보세요."
-                : "프로젝트를 만들면 이곳에서 작업을 모아 관리할 수 있습니다."}
+                : "프로젝트를 만든 뒤 비교할 대상과 테스트를 설정하세요."}
             </EmptyDescription>
           </EmptyHeader>
           <EmptyContent>

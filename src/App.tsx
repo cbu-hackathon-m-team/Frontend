@@ -10,6 +10,7 @@ import { SettingsAppearance, SettingsInvoices, SettingsMembers, SettingsPlans } 
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
 import { DesignSystemPending } from "@/pages/design-system/_components/page-loading";
 import { SidebarProvider } from "@/components/ui/sidebar";
+import { ServerRunLink } from "@/components/ossguard/server-run-link";
 const DesignSystem = lazy(() => import("@/pages/design-system"));
 const Presentation = lazy(() => import("@/pages/presentation/Presentation"));
 export default function App() {
@@ -39,6 +40,7 @@ export default function App() {
           <Route path="settings/invoices" element={<SettingsInvoices />} />
           <Route path="settings/appearance" element={<SettingsAppearance />} />
         </Route>
+        <Route path="/validations/:runId" element={<DashboardLayout />}><Route index element={<ServerRunLink />} /></Route>
         <Route path="*" element={<Navigate to="/design-system" replace />} />
       </Routes>
     </div>

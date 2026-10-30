@@ -116,6 +116,12 @@
   .heroTileLabel { border-top: 0; padding: 16px; }
 }
 
+@container design-system (max-width: 420px) {
+  .heroTile { grid-template-columns: minmax(0, 1fr); }
+  .heroFoundation, .heroComponents, .heroInteraction { height: 132px; }
+  .heroTileLabel { border-top: 1px solid var(--boundary-subtle); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .heroTile { transition: none; }
 }

@@ -1,13 +1,18 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { UserRound } from "lucide-react";
-import { workspaceNavigation } from "./workspace-navigation";
-import { isSettingsPath, settingsNavigation, workspaceReturn } from "./settings-navigation";
-import { WorkspaceAccountMenu } from "./workspace-account-menu";
 import {
-  Popover,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+  getWorkspaceNavigationGroups,
+  isWorkspaceNavigationActive,
+} from "./workspace-navigation";
+import {
+  isSettingsPath,
+  settingsNavigation,
+  workspaceReturn,
+} from "./settings-navigation";
+import { WorkspaceAccountMenu } from "./workspace-account-menu";
+import { useBackend } from "@/components/ossguard/backend-context";
+import { Popover, PopoverTrigger } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
 import { SidebarMenuItem } from "@/components/ui/sidebar";
 import {
@@ -23,8 +28,13 @@ import {
 } from "@/components/ui/tooltip";
 
 export function FloatingNavPanel() {
-  const { pathname } = useLocation();
-  const navigation = isSettingsPath(pathname) ? [workspaceReturn, ...settingsNavigation] : workspaceNavigation;
+  const { projects: remoteProjects, api } = useBackend();
+  const { pathname, search } = useLocation();
+  const navigation = isSettingsPath(pathname)
+    ? [workspaceReturn, ...settingsNavigation]
+    : getWorkspaceNavigationGroups(search, pathname, remoteProjects, !!api).flatMap(
+        (group) => group.items,
+      );
   const id = useId();
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
@@ -166,12 +176,20 @@ export function FloatingNavPanel() {
               <TooltipTrigger asChild>
                 <SidebarHoverButton
                   asChild
-                  data-active={pathname === href}
+                  data-active={isWorkspaceNavigationActive(
+                    href,
+                    pathname,
+                    search,
+                  )}
                 >
                   <Link
                     to={href}
                     aria-label={title}
-                    aria-current={pathname === href ? "page" : undefined}
+                    aria-current={
+                      isWorkspaceNavigationActive(href, pathname, search)
+                        ? "page"
+                        : undefined
+                    }
                     onClick={navigate}
                   >
                     <Icon />
@@ -179,14 +197,18 @@ export function FloatingNavPanel() {
                   </Link>
                 </SidebarHoverButton>
               </TooltipTrigger>
-              {visible && !accountOpen && tooltip === title && <TooltipContent side="right" sideOffset={10}>
-                {title}
-              </TooltipContent>}
+              {visible && !accountOpen && tooltip === title && (
+                <TooltipContent side="right" sideOffset={10}>
+                  {title}
+                </TooltipContent>
+              )}
             </Tooltip>
           </SidebarMenuItem>
         ))}
         <SidebarMenuItem aria-hidden="true" className="mt-auto w-8">
-          <div className="pt-2"><Separator /></div>
+          <div className="pt-2">
+            <Separator />
+          </div>
         </SidebarMenuItem>
         <SidebarMenuItem>
           <Popover
@@ -207,9 +229,12 @@ export function FloatingNavPanel() {
                   <SidebarHoverButton
                     aria-label="계정 메뉴"
                     data-active={accountOpen}
-                    onPointerDown={() => { accountKeyboard.current = false; }}
+                    onPointerDown={() => {
+                      accountKeyboard.current = false;
+                    }}
                     onKeyDown={(event) => {
-                      if (event.key === "Enter" || event.key === " ") accountKeyboard.current = true;
+                      if (event.key === "Enter" || event.key === " ")
+                        accountKeyboard.current = true;
                     }}
                   >
                     <UserRound />
@@ -217,9 +242,11 @@ export function FloatingNavPanel() {
                   </SidebarHoverButton>
                 </PopoverTrigger>
               </TooltipTrigger>
-              {visible && !accountOpen && tooltip === "계정 메뉴" && <TooltipContent side="right" sideOffset={10}>
-                계정 메뉴
-              </TooltipContent>}
+              {visible && !accountOpen && tooltip === "계정 메뉴" && (
+                <TooltipContent side="right" sideOffset={10}>
+                  계정 메뉴
+                </TooltipContent>
+              )}
             </Tooltip>
             <SidebarHoverAccountContent
               aria-label="계정 설정"

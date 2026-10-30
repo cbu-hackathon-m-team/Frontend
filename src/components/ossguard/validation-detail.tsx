@@ -1,0 +1,358 @@
+import { useState } from "react";
+import {
+  CheckCircle2,
+  CircleDashed,
+  XCircle,
+  LoaderCircle,
+} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from "@/components/ui/accordion";
+import {
+  Empty,
+  EmptyHeader,
+  EmptyTitle,
+  EmptyDescription,
+} from "@/components/ui/empty";
+import { cn } from "@/lib/utils";
+import { GuardResults } from "./guard-results";
+import { RunSummary } from "./run-summary";
+import { outcomeLabel, type ValidationProject, type SampleRun } from "./model";
+
+function DetailContent({
+  project,
+  result,
+  run,
+}: {
+  project: ValidationProject;
+  result: SampleRun;
+  run: number;
+}) {
+  const [stageId, setStageId] = useState(
+    result.execution?.stages.find((s) => s.state === "failed")?.id,
+  );
+  const stage =
+    result.execution?.stages.find((s) => s.id === stageId) ??
+    result.execution?.stages.find(
+      (s) => s.state === "running" || s.state === "failed",
+    );
+  const [tab, setTab] = useState(
+    result.execution?.stages.some((s) => s.state === "failed") &&
+      result.cases.every((c) => c.outcome === "unverified")
+      ? "execution"
+      : "comparison",
+  );
+  return (
+    <div className="flex min-w-0 flex-col gap-5">
+      <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
+        <div className="flex min-w-0 flex-col gap-3">
+          <div className="flex min-w-0 flex-wrap items-center gap-3">
+            <h2 className="type-heading-md break-keep">{result.title}</h2>
+            <Badge
+              variant={
+                result.outcome === "regression"
+                  ? "error"
+                  : result.outcome === "passed"
+                    ? "success"
+                    : "muted"
+              }
+            >
+              {result.source === "preview"
+                ? "실행 전"
+                : result.awaitingResults
+                  ? result.status === "QUEUED"
+                    ? "대기 중"
+                    : "실행 중"
+                  : outcomeLabel[result.outcome]}
+            </Badge>
+            <span className="type-code-sm text-interface-muted">
+              {result.source === "preview"
+                ? "미리보기"
+                : result.source === "runner"
+                  ? result.id.slice(0, 8)
+                  : `${result.execution?.kind === "example" ? "EXAMPLE" : "RUN"}-${String(run).padStart(3, "0")}`}
+            </span>
+          </div>
+          <div className="flex min-w-0 flex-wrap items-center gap-x-6 gap-y-2 type-body-sm text-interface-secondary">
+            <span className="min-w-0 break-all">
+              {project.repository?.sha
+                ? project.repository.sha.slice(0, 12)
+                : "SHA 확인 전"}{" "}
+              · {project.repository?.ref ?? "소스 미등록"}
+            </span>
+            <span className="break-all">
+              {project.update
+                ? `${project.update.packageName} ${project.update.locked || "잠금 확인 전"} → ${project.update.targetVersion}`
+                : `${project.baseline.label} → ${project.candidate.label}`}
+            </span>
+            {result.execution?.kind === "example" && (
+              <Badge variant="muted">화면 예시 · 실제 실행 아님</Badge>
+            )}
+            {result.control && <Badge variant="outline">동일 버전 대조군</Badge>}
+            {result.createdAt && (
+              <time dateTime={result.createdAt}>
+                {new Date(result.createdAt).toLocaleString("ko-KR")}
+              </time>
+            )}
+          </div>
+        </div>
+        <RunSummary result={result} compact />
+      </div>
+      {result.execution && (
+        <Card variant="panel">
+          <CardContent className="p-2 md:p-2">
+            <ol
+              className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-6"
+              aria-label="검증 실행 파이프라인"
+            >
+              {result.execution.stages.map((s) => {
+                const Icon =
+                  s.state === "done"
+                    ? CheckCircle2
+                    : s.state === "failed"
+                      ? XCircle
+                      : s.state === "running"
+                        ? LoaderCircle
+                        : CircleDashed;
+                return (
+                  <li key={s.id} className="min-w-0">
+                    <Button
+                      aria-label={s.label}
+                      aria-current={s.state === "running" ? "step" : undefined}
+                      variant={stageId === s.id ? "secondary" : "ghost"}
+                      className="h-auto w-full justify-start"
+                      onClick={() => {
+                        setStageId(s.id);
+                        setTab("execution");
+                      }}
+                    >
+                      <span className="flex min-w-0 items-center gap-2">
+                        <Icon
+                          className={cn(
+                            s.state === "done"
+                              ? "text-signal-success"
+                              : s.state === "failed"
+                                ? "text-signal-danger"
+                                : s.state === "running"
+                                  ? "text-interface-contrast animate-spin motion-reduce:animate-none"
+                                  : "text-interface-muted",
+                          )}
+                        />
+                        <span className="whitespace-normal text-left">
+                          {s.label.replace("빌드·테스트", "검증")}
+                        </span>
+                      </span>
+                    </Button>
+                  </li>
+                );
+              })}
+            </ol>
+          </CardContent>
+        </Card>
+      )}
+      <Tabs value={tab} onValueChange={setTab} className="min-w-0">
+        <div className="overflow-x-auto">
+          <TabsList variant="line" aria-label="실행 상세">
+            <TabsTrigger variant="line" value="comparison">
+              업무 비교
+            </TabsTrigger>
+            <TabsTrigger variant="line" value="changes">
+              변경 증거
+            </TabsTrigger>
+            <TabsTrigger variant="line" value="execution">
+              실행·로그
+            </TabsTrigger>
+          </TabsList>
+        </div>
+        <TabsContent value="comparison" className="mt-3 min-w-0">
+          {result.awaitingResults &&
+          result.cases.every(
+            (c) =>
+              !Object.keys(c.baseline.values).length &&
+              !Object.keys(c.candidate.values).length,
+          ) ? (
+            <Empty variant="panel">
+              <EmptyHeader>
+                <EmptyTitle>업무 결과 수집 중</EmptyTitle>
+                <EmptyDescription>
+                  실행 단계가 완료되는 대로 A/B 관측값을 표시합니다.
+                </EmptyDescription>
+              </EmptyHeader>
+              <Button variant="outline" onClick={() => setTab("execution")}>
+                진행 로그 보기
+              </Button>
+            </Empty>
+          ) : (
+            <GuardResults
+              project={project}
+              result={result}
+              run={run}
+              embedded
+            />
+          )}
+        </TabsContent>
+        <TabsContent value="changes" className="min-w-0">
+          <div className="flex min-w-0 flex-col gap-5">
+            <div className="grid gap-4 sm:grid-cols-2">
+              {[
+                ["A · 실제 설치 버전", result.execution?.installedA],
+                ["B · 실제 설치 버전", result.execution?.installedB],
+              ].map(([label, value]) => (
+                <Card variant="panel" key={label}>
+                  <CardHeader>
+                    <CardTitle>
+                      {label}
+                      {result.execution?.kind === "example" ? " 예시" : ""}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="type-code-sm">{value ?? "수집되지 않음"}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+            {!!result.execution?.packages.length && (
+              <Card variant="panel">
+                <CardHeader>
+                  <CardTitle>전체 패키지 변경</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ul className="flex flex-col gap-4">
+                    {result.execution.packages.map((p) => (
+                      <li
+                        key={p.name}
+                        className="flex flex-wrap items-center justify-between gap-3"
+                      >
+                        <span className="flex items-center gap-2 type-code-sm">
+                          {p.name}
+                          <Badge variant="outline">
+                            {p.direct ? "직접" : "하위"}
+                          </Badge>
+                        </span>
+                        <span className="type-code-sm">
+                          {p.before} → {p.after}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            )}
+            <Card variant="panel">
+              <CardHeader>
+                <CardTitle>변경 파일</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Accordion
+                  type="multiple"
+                  defaultValue={result.execution?.files
+                    .slice(0, 1)
+                    .map((f) => f.path)}
+                >
+                  {(result.execution?.files ?? []).map((file) => (
+                    <AccordionItem key={file.path} value={file.path}>
+                      <AccordionTrigger>{file.path}</AccordionTrigger>
+                      <AccordionContent>
+                        <pre className="overflow-x-auto whitespace-pre-wrap break-words rounded-md bg-surface-canvas p-4 type-code-sm">
+                          {file.diff.split("\n").map((line, i) => (
+                            <span
+                              key={i}
+                              className={cn(
+                                "block",
+                                line.startsWith("+")
+                                  ? "text-signal-success"
+                                  : line.startsWith("-")
+                                    ? "text-signal-danger"
+                                    : "text-interface-secondary",
+                              )}
+                            >
+                              {line}
+                            </span>
+                          ))}
+                        </pre>
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+                {!result.execution?.files.length && (
+                  <p className="type-body-sm text-interface-muted">
+                    수집된 파일 diff가 없습니다.
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+        <TabsContent value="execution" className="min-w-0">
+          <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_260px]">
+            <Card variant="panel">
+              <CardHeader>
+                <CardTitle>{stage?.label ?? "실행 기록"}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <pre className="overflow-x-auto whitespace-pre-wrap break-words rounded-lg bg-surface-canvas p-4 type-code-sm">
+                  {stage?.detail ?? result.summary}
+                </pre>
+                {result.execution?.kind === "example" && (
+                  <p className="mt-3 type-body-xs text-interface-muted">
+                    단계와 증거 배치를 확인하는 예시입니다. 실제 빌드 로그는
+                    아직 없습니다.
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+            <Card variant="panel">
+              <CardHeader>
+                <CardTitle>후속 처리</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <dl className="flex flex-col gap-4 type-body-sm">
+                  {[
+                    ["자원 정리", result.execution?.cleanup],
+                    ["AI 설명", result.execution?.ai],
+                    ["결과 이메일", result.execution?.email],
+                  ].map(([label, value]) => (
+                    <div key={label} className="flex justify-between gap-3">
+                      <dt className="text-interface-secondary">{label}</dt>
+                      <dd>{value ?? "대기"}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+      </Tabs>
+      {!result.cases.length && (
+        <Empty>
+          <EmptyHeader>
+            <EmptyTitle>테스트 결과 없음</EmptyTitle>
+            <EmptyDescription>
+              업데이트 또는 빌드 단계의 실행 기록을 확인하세요.
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
+      )}
+    </div>
+  );
+}
+
+export function ValidationDetail(props: {
+  project: ValidationProject;
+  result: SampleRun;
+  run: number;
+}) {
+  return (
+    <DetailContent
+      key={`${props.result.id}:${props.run}:${props.result.awaitingResults ? "pending" : "finished"}`}
+      {...props}
+    />
+  );
+}

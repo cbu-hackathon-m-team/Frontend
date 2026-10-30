@@ -1,0 +1,15 @@
+.compact {
+  display: grid;
+}
+.wide {
+  display: none;
+}
+
+@container (min-width: 680px) {
+  .compact {
+    display: none;
+  }
+  .wide {
+    display: block;
+  }
+}

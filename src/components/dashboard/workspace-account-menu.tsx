@@ -72,6 +72,7 @@ export function WorkspaceAccountMenu({
       <div className="p-1.5">
         <Button variant="ghost" className="w-full justify-start" asChild>
           <Link to="/login" replace onClick={() => {
+            try { sessionStorage.removeItem("ossguard.api-session"); } catch { /* Route exit also releases the in-memory client. */ }
             endPreviewSession();
             onNavigate();
           }}>

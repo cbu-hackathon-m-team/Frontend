@@ -35,24 +35,3 @@ export const cases = [
     delivery: 0,
   },
 ];
-export const stages = [
-  "설정 확인",
-  "기준 실행",
-  "후보 업데이트",
-  "비교·분석",
-  "자원 정리",
-  "알림",
-];
-export function caseResult(scenario: Scenario, index: number) {
-  if (scenario === "error") return "미검증";
-  if (index > 1 || scenario === "fixed") return "통과";
-  return scenario === "baseline" ? "기준 확인 필요" : "규칙 위반";
-}
-export function verdict(scenario: Scenario) {
-  return {
-    defect: "회귀 의심",
-    fixed: "전체 통과",
-    baseline: "기준 확인 필요",
-    error: "실행 오류 · 미검증",
-  }[scenario];
-}

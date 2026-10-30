@@ -1,0 +1,22 @@
+.comparison {
+  container-type: inline-size;
+}
+.metrics {
+  display: grid;
+}
+.metric {
+  min-width: 0;
+}
+.metric + .metric {
+  border-top: 1px solid var(--boundary-subtle);
+}
+
+@container (min-width: 620px) {
+  .metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .metric + .metric {
+    border-top: 0;
+    border-left: 1px solid var(--boundary-subtle);
+  }
+}
