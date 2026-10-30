@@ -1,0 +1,10 @@
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
+import { AppearanceProvider } from '@/components/providers/AppearanceProvider';
+import { Toaster } from '@/components/ui/sonner';
+import App from './App';
+import '@fontsource-variable/geist';
+import '@fontsource-variable/geist-mono';
+import './styles/globals.css';
+createRoot(document.getElementById('root')!).render(<StrictMode><AppearanceProvider><BrowserRouter><App /></BrowserRouter><Toaster /></AppearanceProvider></StrictMode>);

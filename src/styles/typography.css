@@ -1,0 +1,222 @@
+@utility type-heading-xl {
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 24px;
+}
+
+@utility type-heading-lg {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 28px;
+}
+
+@utility type-heading-md {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 24px;
+}
+
+@utility type-heading-sm {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 20px;
+}
+
+@utility type-heading-xs {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+@utility type-body-md {
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 20px;
+}
+
+@utility type-body-md-medium {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+@utility type-body-sm {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+}
+
+@utility type-body-xs {
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 20px;
+}
+
+@utility type-body-xs-medium {
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+@utility type-label-xl {
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 22px;
+}
+
+@utility type-label-lg {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 21px;
+}
+
+@utility type-label-md {
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 20px;
+}
+
+@utility type-label-sm {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+}
+
+@utility type-label-xs {
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 16px;
+}
+
+@utility type-eyebrow-xs {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.025em;
+  line-height: 16px;
+  text-transform: uppercase;
+}
+
+@utility type-caption-xs {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.025em;
+  line-height: 14px;
+}
+
+@utility type-metric-lg {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 33px;
+  font-variant-numeric: tabular-nums;
+}
+
+@utility type-metric-lg-semibold {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 33px;
+  font-variant-numeric: tabular-nums;
+}
+
+@utility type-metric-md {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 20px;
+  font-variant-numeric: tabular-nums;
+}
+
+@utility type-metric-sm {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 18px;
+  font-variant-numeric: tabular-nums;
+}
+
+@utility type-metric-sm-tight {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  font-variant-numeric: tabular-nums;
+}
+
+@utility type-code-md {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 20px;
+  font-variant-numeric: tabular-nums;
+}
+
+@utility type-code-sm {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 20px;
+  font-variant-numeric: tabular-nums;
+}
+@utility type-display-md {
+  font-size: 36px;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 48px;
+}
+
+/* Korean marketing copy. Keep product and shared control roles unchanged. */
+@utility type-landing-hero {
+  font-size: 52px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 66px;
+  @media (max-width: 760px) {
+    font-size: 32px;
+    line-height: 44px;
+  }
+  @media (max-width: 340px) {
+    font-size: 28px;
+    letter-spacing: -0.02em;
+    line-height: 38px;
+  }
+}
+
+@utility type-landing-heading {
+  font-size: 40px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 52px;
+  @media (max-width: 760px) {
+    font-size: 28px;
+    letter-spacing: -0.02em;
+    line-height: 38px;
+  }
+}
+
+@utility type-landing-title {
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  line-height: 28px;
+}
+
+@utility type-landing-lead {
+  font-size: 18px;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 30px;
+  @media (max-width: 760px) {
+    font-size: 16px;
+    line-height: 26px;
+  }
+}
+
+@utility type-landing-body {
+  font-size: 16px;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 26px;
+}

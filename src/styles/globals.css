@@ -1,0 +1,244 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import './typography.css';
+@import './tokens.css';
+@import './public-pages.css';
+@import './landing.css';
+
+@custom-variant dark (&:is(.dark *));
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  :is(a[href], button, summary, label[for],
+      [role="button"], [role="link"], [role="tab"],
+      [role="menuitem"], [role="menuitemcheckbox"], [role="menuitemradio"],
+      [role="option"], [role="checkbox"], [role="radio"], [role="switch"], [role="slider"],
+      input[type="button"], input[type="submit"], input[type="reset"],
+      input[type="checkbox"], input[type="radio"], input[type="file"]):not(:disabled):not([aria-disabled="true"]):not([data-disabled=""]):not([data-disabled="true"]) {
+    cursor: pointer;
+  }
+  body {
+    @apply bg-background text-interface-default font-sans antialiased;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html[data-appearance-capture] *,
+  html[data-appearance-capture] *::before,
+  html[data-appearance-capture] *::after {
+    transition: none !important;
+  }
+  html[data-appearance-transition]::view-transition {
+    pointer-events: none;
+  }
+  html[data-appearance-transition]::view-transition-group(root) {
+    animation-duration: var(--motion-control);
+    animation-timing-function: var(--ease-out);
+  }
+  html[data-appearance-transition]::view-transition-old(root) {
+    animation: none;
+  }
+  html[data-appearance-transition]::view-transition-new(root) {
+    animation: appearance-fade-in var(--motion-control) var(--ease-out) both;
+    mix-blend-mode: normal;
+  }
+}
+@keyframes appearance-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html, html *, html *::before, html *::after {
+    transition-duration: 0s !important;
+  }
+}
+
+/* Hide scrollbar but allow scrolling */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Custom thin scrollbar for when needed */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
+}
+
+/* Markdown prose styling shared by both themes */
+.prose {
+  --tw-prose-body: var(--foreground);
+  --tw-prose-headings: var(--foreground);
+  --tw-prose-lead: var(--muted-foreground);
+  --tw-prose-links: var(--chart-1);
+  --tw-prose-bold: var(--foreground);
+  --tw-prose-counters: var(--muted-foreground);
+  --tw-prose-bullets: var(--muted-foreground);
+  --tw-prose-hr: var(--border);
+  --tw-prose-quotes: var(--foreground);
+  --tw-prose-quote-borders: var(--border);
+  --tw-prose-captions: var(--muted-foreground);
+  --tw-prose-code: var(--foreground);
+  --tw-prose-pre-code: var(--foreground);
+  --tw-prose-pre-bg: var(--muted);
+  --tw-prose-th-borders: var(--border);
+  --tw-prose-td-borders: var(--border);
+}
+
+.prose h1, .prose h2, .prose h3, .prose h4 {
+  font-weight: 600;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+}
+
+.prose h1 { font-size: 1.5rem; }
+.prose h2 { font-size: 1.25rem; }
+.prose h3 { font-size: 1.1rem; }
+
+.prose code {
+  background: var(--muted);
+  padding: 0.2em 0.4em;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+}
+
+.prose pre {
+  background: var(--muted);
+  padding: 1em;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+}
+
+.prose pre code {
+  background: transparent;
+  padding: 0;
+}
+
+.prose ul, .prose ol {
+  padding-left: 1.5em;
+}
+
+.prose li {
+  margin-top: 0.25em;
+  margin-bottom: 0.25em;
+}
+
+.prose strong {
+  font-weight: 600;
+}
+
+/* Collapsible 애니메이션 */
+@keyframes collapsible-down {
+  from { height: 0; opacity: 0; }
+  to { height: var(--radix-collapsible-content-height); opacity: 1; }
+}
+
+@keyframes collapsible-up {
+  from { height: var(--radix-collapsible-content-height); opacity: 1; }
+  to { height: 0; opacity: 0; }
+}
+
+.animate-collapsible-down {
+  animation: collapsible-down var(--motion-panel) var(--ease-out);
+}
+
+.animate-collapsible-up {
+  animation: collapsible-up var(--motion-panel) var(--ease-out);
+}
+
+/* 백테스트 프로그레스 바 애니메이션 */
+@keyframes progress-fill {
+  from { width: 0%; }
+  to { width: 100%; }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+.animate-progress-fill {
+  animation: progress-fill 3s ease-in-out;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 1.5s ease-in-out infinite;
+}
+
+/* Geist: 크기를 유지하는 중립적인 로딩 표시. */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--surface-raised);
+}
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--contrast) 8%, transparent), transparent);
+  transform: translateX(-100%);
+  animation: skeleton-shimmer 1.6s ease-in-out infinite;
+}
+@keyframes skeleton-shimmer {
+  to { transform: translateX(100%); }
+}
+.skeleton[data-animated="false"]::after { animation: none; display: none; }
+@media (prefers-reduced-motion: reduce) {
+  .skeleton::after { animation: none; display: none; }
+}
+
+@keyframes spinner-fade {
+  0% { opacity: 1; }
+  100% { opacity: 0.15; }
+}
+.spinner-segment { animation: spinner-fade 1.2s linear infinite; }
+
+@utility focus-control {
+  &:focus-visible {
+    outline: 2px solid var(--keyboard-focus);
+    outline-offset: 2px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spinner-segment { animation: none; }
+}
+
+/* Shared toast palette; Sonner owns positioning and gesture styles. */
+html [data-sonner-toaster][data-sonner-theme] {
+  --normal-bg: var(--popover);
+  --normal-text: var(--popover-foreground);
+  --normal-border: var(--border);
+  --success-bg: color-mix(in srgb, var(--signal-success) 10%, var(--popover));
+  --success-text: var(--signal-success);
+  --success-border: color-mix(in srgb, var(--signal-success) 30%, var(--popover));
+  --error-bg: color-mix(in srgb, var(--signal-danger) 10%, var(--popover));
+  --error-text: var(--signal-danger);
+  --error-border: color-mix(in srgb, var(--signal-danger) 30%, var(--popover));
+  --info-bg: color-mix(in srgb, var(--signal-info) 10%, var(--popover));
+  --info-text: var(--signal-info);
+  --info-border: color-mix(in srgb, var(--signal-info) 30%, var(--popover));
+  --warning-bg: color-mix(in srgb, var(--signal-warning) 10%, var(--popover));
+  --warning-text: var(--signal-warning);
+  --warning-border: color-mix(in srgb, var(--signal-warning) 30%, var(--popover));
+}
+
+.spinner-segment { animation-delay: var(--segment-delay); opacity: var(--segment-opacity); }
