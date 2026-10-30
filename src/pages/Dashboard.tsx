@@ -1,5 +1,5 @@
-import { ProjectWorkspace } from "@/components/dashboard/project-workspace";
+import { GuardConsole } from "@/components/ossguard/guard-console";
 
 export default function Dashboard() {
-  return <ProjectWorkspace />;
+  return <GuardConsole />;
 }

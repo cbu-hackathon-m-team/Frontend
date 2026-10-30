@@ -12,6 +12,7 @@ import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { AppearanceProvider } from "@/components/providers/AppearanceProvider";
 import Dashboard from "@/pages/Dashboard";
+import { ProjectWorkspace } from "./project-workspace";
 import DashboardActivity from "@/pages/DashboardActivity";
 import DashboardSettings from "@/pages/DashboardSettings";
 import { SettingsAppearance, SettingsInvoices, SettingsMembers, SettingsPlans } from "@/pages/DashboardSettingsSections";
@@ -109,7 +110,7 @@ it("supports keyboard rail navigation, Escape, and route changes", async () => {
   expect(
     within(screen.getByRole("navigation", { name: "빠른 탐색" })).getByRole(
       "link",
-      { name: "프로젝트" },
+      { name: "검증 콘솔" },
     ),
   ).toHaveFocus();
   await user.keyboard("{Escape}");
@@ -191,7 +192,7 @@ it("uses the normal Sheet on mobile without a hover rail", async () => {
 
 it("does not steal focus from a field clicked outside the floating account menu", async () => {
   const user = userEvent.setup();
-  render(<WorkspaceApp />);
+  render(<WorkspaceApp path="/dashboard/projects" />);
   await user.click(screen.getByRole("button", { name: "사이드바 토글" }));
   await user.click(screen.getByRole("button", { name: "빠른 메뉴 열기" }));
   await user.click(screen.getByRole("button", { name: "계정 메뉴" }));
@@ -209,6 +210,7 @@ function WorkspaceApp({ path = "/dashboard" }: { path?: string }) {
         <Routes>
           <Route path="/dashboard" element={<DashboardLayout />}>
             <Route index element={<Dashboard />} />
+            <Route path="projects" element={<ProjectWorkspace />} />
             <Route path="activity" element={<DashboardActivity />} />
             <Route path="settings" element={<DashboardSettings />} />
             <Route path="settings/members" element={<SettingsMembers />} />
@@ -312,8 +314,8 @@ it("keeps the previous workspace name when storage rejects a change", async () =
   });
   await user.click(screen.getByRole("button", { name: "변경사항 저장" }));
   expect(screen.getByRole("alert")).toHaveTextContent("저장하지 못했습니다");
-  expect(screen.getByRole("link", { name: "Hapalin Studio" })).toBeInTheDocument();
-  expect(readWorkspace().name).toBe("Hapalin Studio");
+  expect(screen.getByRole("link", { name: "OSSGuard" })).toBeInTheDocument();
+  expect(readWorkspace().name).toBe("OSSGuard");
 });
 
 it("shows the latest stored change per project in timestamp order", () => {
@@ -358,11 +360,11 @@ it("replaces workspace navigation with settings sections and restores it on retu
     await user.click(settingsNav.getByRole("link", { name: title }));
     expect(screen.getByRole("heading", { name: title, level: 1 })).toBeInTheDocument();
     expect(settingsNav.getByRole("link", { name: title })).toHaveAttribute("aria-current", "page");
-    expect(document.title).toBe(`${title} | Hapalin`);
+    expect(document.title).toBe(`${title} | OSSGuard`);
   }
   expect(screen.queryByRole("button", { name: "Blue accent" })).not.toBeInTheDocument();
   await user.click(screen.getByRole("link", { name: "돌아가기" }));
-  expect(screen.getByRole("heading", { name: "프로젝트", level: 1 })).toBeInTheDocument();
+  expect(screen.getByRole("heading", { name: "업데이트 검증", level: 1 })).toBeInTheDocument();
   expect(screen.getByRole("link", { name: "최근 변경" })).toBeInTheDocument();
   expect(screen.queryByRole("link", { name: "일반" })).not.toBeInTheDocument();
 });
@@ -380,5 +382,7 @@ it("uses the same settings destinations in the collapsed hover rail", async () =
   expect(screen.getByRole("button", { name: "결제 정보 관리" })).toBeDisabled();
   await user.click(screen.getByRole("button", { name: "빠른 메뉴 열기" }));
   await user.click(screen.getByRole("link", { name: "돌아가기" }));
-  expect(screen.getByRole("heading", { name: "프로젝트", level: 1 })).toBeInTheDocument();
+  expect(screen.getByRole("heading", { name: "업데이트 검증", level: 1 })).toBeInTheDocument();
 });
+
+

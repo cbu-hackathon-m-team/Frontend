@@ -201,7 +201,7 @@ function WorkspaceChrome() {
     }
   });
   useEffect(() => {
-    document.title = `${page} | Hapalin`;
+    document.title = `${page} | OSSGuard`;
   }, [page]);
   function saveWorkspace(workspace: Workspace) {
     if (state.error) return state.error;
@@ -269,3 +269,4 @@ export function DashboardLayout() {
     </SidebarProvider>
   );
 }
+

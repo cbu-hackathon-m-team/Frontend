@@ -40,7 +40,7 @@ it("coalesces inputs before capture without restarting it and cleans up on exit"
   fireEvent.keyDown(window, { key: "End" });
   expect(captures).toHaveLength(1);
   expect(captures[0].skip).not.toHaveBeenCalled();
-  act(() => captures[0].update());
+  act(() => { void captures[0].update(); });
   expect(screen.getByRole("status")).toHaveTextContent("15 / 15");
   expect(document.documentElement.dataset.pptDirection).toBe("jump");
   unmount();
@@ -54,7 +54,7 @@ it("finishes the current pose before animating the latest queued destination", a
   const captures = controlledTransitions();
   render(<Deck />);
   fireEvent.keyDown(window, { key: "ArrowRight" });
-  act(() => captures[0].update());
+  act(() => { void captures[0].update(); });
   expect(screen.getByRole("status")).toHaveTextContent("02 / 15");
   fireEvent.keyDown(window, { key: "ArrowRight" });
   fireEvent.keyDown(window, { key: "ArrowRight" });
@@ -62,7 +62,7 @@ it("finishes the current pose before animating the latest queued destination", a
   expect(captures[0].skip).not.toHaveBeenCalled();
   await act(async () => captures[0].finish());
   expect(captures).toHaveLength(2);
-  act(() => captures[1].update());
+  act(() => { void captures[1].update(); });
   expect(screen.getByRole("status")).toHaveTextContent("04 / 15");
   await act(async () => captures[1].finish());
   expect(document.documentElement.dataset.pptDirection).toBeUndefined();
@@ -73,7 +73,7 @@ it("cancels an uncommitted step reversed back to the current page", async () => 
   render(<Deck />);
   fireEvent.keyDown(window, { key: "ArrowRight" });
   fireEvent.keyDown(window, { key: "ArrowLeft" });
-  act(() => captures[0].update());
+  act(() => { void captures[0].update(); });
   expect(screen.getByRole("status")).toHaveTextContent("01 / 15");
   expect(captures[0].skip).toHaveBeenCalledOnce();
   await act(async () => captures[0].finish());
@@ -94,6 +94,40 @@ it("navigates without capture when reduced motion is requested or capture fails"
   expect(capture).toHaveBeenCalledOnce();
   expect(screen.getByRole("status")).toHaveTextContent("01 / 15");
   expect(document.documentElement.dataset.pptDirection).toBeUndefined();
+});
+
+it("releases an active capture immediately when reduced motion is requested", async () => {
+  const captures = controlledTransitions();
+  render(<Deck />);
+  fireEvent.keyDown(window, { key: "ArrowRight" });
+  act(() => { void captures[0].update(); });
+  vi.stubGlobal("matchMedia", vi.fn(() => ({ matches: true, addEventListener: vi.fn(), removeEventListener: vi.fn() })));
+  fireEvent.keyDown(window, { key: "ArrowRight" });
+  expect(screen.getByRole("status")).toHaveTextContent("03 / 15");
+  expect(captures[0].skip).toHaveBeenCalledOnce();
+  await act(async () => captures[0].finish());
+  expect(captures).toHaveLength(1);
+  expect(document.documentElement.dataset.pptDirection).toBeUndefined();
+});
+
+it("preserves old and new headline rectangles and releases the temporary copy geometry", async () => {
+  const captures = controlledTransitions();
+  const { container } = render(<Deck />);
+  const oldTitle = container.querySelector('[data-slide="1"] h1')!;
+  const nextTitle = container.querySelector('[data-slide="2"] h2')!;
+  vi.spyOn(oldTitle, "getBoundingClientRect").mockReturnValue(new DOMRect(60, 200, 400, 120));
+  vi.spyOn(nextTitle, "getBoundingClientRect").mockReturnValue(new DOMRect(40, 80, 500, 140));
+  fireEvent.keyDown(window, { key: "ArrowRight" });
+  const geometry = document.documentElement.style;
+  expect(geometry.getPropertyValue("--ppt-old-title-x")).toBe("60px");
+  act(() => { void captures[0].update(); });
+  expect(geometry.getPropertyValue("--ppt-new-title-x")).toBe("40px");
+  expect(geometry.getPropertyValue("--ppt-new-title-w")).toBe("500px");
+  expect(geometry.getPropertyValue("--ppt-old-title-w")).toBe("400px");
+  expect(screen.getByRole("heading", { level: 2 })).toHaveTextContent("만들고 싶은 건 많고,");
+  await act(async () => captures[0].finish());
+  expect(geometry.getPropertyValue("--ppt-old-title-x")).toBe("");
+  expect(geometry.getPropertyValue("--ppt-new-title-w")).toBe("");
 });
 
 it("renders fifteen slides with one visible slide and supports keyboard boundaries", () => {

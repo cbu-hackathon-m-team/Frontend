@@ -4,7 +4,7 @@ export interface Workspace {
 }
 export const WORKSPACE_STORAGE_KEY = "hapalin.workspace.v1";
 export const defaultWorkspace: Workspace = {
-  name: "Hapalin Studio",
+  name: "OSSGuard",
   description: "",
 };
 export function readWorkspace(): Workspace {
@@ -28,3 +28,4 @@ export function readWorkspace(): Workspace {
 export function writeWorkspace(workspace: Workspace) {
   localStorage.setItem(WORKSPACE_STORAGE_KEY, JSON.stringify(workspace));
 }
+

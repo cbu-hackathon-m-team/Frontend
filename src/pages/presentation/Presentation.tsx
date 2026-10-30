@@ -1,6 +1,6 @@
 /* eslint shadcn/require-static-classes: "off" -- Static CSS module references define slide composition; shared UI keeps its component variants. */
 import styles from "./presentation.module.css";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ArrowLeft, ArrowRight, Grid2X2, Maximize, Minimize } from "lucide-react";
@@ -13,6 +13,25 @@ import { PresentationArtwork } from "./artwork";
 
 
 type PageDirection = "forward" | "backward" | "jump";
+const copyParts = [["title", ":is(h1,h2)"], ["lead", "p"]] as const;
+const copyAxes = ["x", "y", "w", "h"] as const;
+
+function measureCopy(stage: HTMLElement | null, phase: "old" | "new") {
+  const message = stage?.querySelector('[data-slide]:not([hidden])')?.querySelector(`.${styles["ppt-message"]}`);
+  for (const [part, selector] of copyParts) {
+    const element = message?.querySelector(selector);
+    if (!element) continue;
+    const { left: x, top: y, width: w, height: h } = element.getBoundingClientRect();
+    const bounds = { x, y, w, h };
+    for (const axis of copyAxes) document.documentElement.style.setProperty(`--ppt-${phase}-${part}-${axis}`, `${bounds[axis]}px`);
+  }
+}
+
+function clearCopyMetrics() {
+  for (const phase of ["old", "new"]) for (const [part] of copyParts) for (const axis of copyAxes) {
+    document.documentElement.style.removeProperty(`--ppt-${phase}-${part}-${axis}`);
+  }
+}
 
 export function slideIndex(hash: string) {
   const value = Number(hash.replace(/^#/, ""));
@@ -26,17 +45,17 @@ export default function Presentation() {
   const [overview, setOverview] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
   const [notice, setNotice] = useState("");
-  const [fallbackDirection, setFallbackDirection] = useState<PageDirection>();
+  const [fallbackEntry, setFallbackEntry] = useState<{ target: number; direction: PageDirection }>();
   const requestedIndex = useRef(index);
   const committedIndex = useRef(index);
   const requestedDirection = useRef<PageDirection>("jump");
   const stageRef = useRef<HTMLElement>(null);
   const transitionRef = useRef<ViewTransition | null>(null);
   const transitionId = useRef(0);
+  const pendingCapture = useRef<{ id: number; target: number; resolve: () => void } | null>(null);
   const animateToRequested = useCallback(function animate() {
     if (requestedIndex.current === committedIndex.current) return;
     const id = ++transitionId.current;
-    const began = performance.now();
     const root = document.documentElement;
     let capturing = false;
     const commit = () => {
@@ -48,36 +67,39 @@ export default function Presentation() {
         return;
       }
       if (capturing) root.dataset.pptDirection = requestedDirection.current;
+      // Declarative routers may schedule navigation in a concurrent React lane.
+      const rendered = capturing ? new Promise<void>(resolve => { pendingCapture.current = { id, target, resolve }; }) : undefined;
       committedIndex.current = target;
       flushSync(() => navigate({ pathname, search, hash: `#${target + 1}` }, { replace: true }));
+      return rendered;
     };
     const finish = () => {
-      if (import.meta.env.DEV) console.debug("PPT finish", id, Math.round(performance.now() - began));
       if (id !== transitionId.current) return;
       transitionRef.current = null;
       delete root.dataset.pptDirection;
+      clearCopyMetrics();
       // Complete the current visual pose before beginning the latest queued step.
       if (requestedIndex.current !== committedIndex.current) animate();
     };
     if (!document.startViewTransition || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      if (import.meta.env.DEV) console.debug("PPT fallback", typeof document.startViewTransition);
-      setFallbackDirection(window.matchMedia("(prefers-reduced-motion: reduce)").matches ? undefined : requestedDirection.current);
+      setFallbackEntry(window.matchMedia("(prefers-reduced-motion: reduce)").matches ? undefined : { target: requestedIndex.current, direction: requestedDirection.current });
       commit();
       finish();
       return;
     }
-    setFallbackDirection(undefined);
+    setFallbackEntry(undefined);
     capturing = true;
+    measureCopy(stageRef.current, "old");
     root.dataset.pptDirection = requestedDirection.current;
     try {
       const transition = document.startViewTransition(commit);
       transitionRef.current = transition;
-      void transition.ready.then(() => { if (import.meta.env.DEV) { const style = getComputedStyle(root, "::view-transition-new(hapalin-content)"); console.debug("PPT ready", id, Math.round(performance.now() - began), root.dataset.pptDirection, style.animationName, style.animationDuration, style.animationPlayState, getComputedStyle(root).getPropertyValue("--ppt-enter-time")); } }, error => { if (import.meta.env.DEV) console.debug("PPT capture", String(error)); });
+      void transition.ready.catch(() => {});
       void transition.finished.then(finish, finish);
     } catch {
       capturing = false;
       delete root.dataset.pptDirection;
-      setFallbackDirection(requestedDirection.current);
+      setFallbackEntry({ target: requestedIndex.current, direction: requestedDirection.current });
       commit();
       finish();
     }
@@ -92,27 +114,43 @@ export default function Presentation() {
       transitionId.current += 1;
       transitionRef.current.skipTransition();
       transitionRef.current = null;
+      pendingCapture.current?.resolve();
+      pendingCapture.current = null;
       delete document.documentElement.dataset.pptDirection;
+      clearCopyMetrics();
     }
     if (!transitionRef.current) animateToRequested();
   }, [animateToRequested]);
 
+  useLayoutEffect(() => {
+    const pending = pendingCapture.current;
+    if (!pending || pending.id !== transitionId.current || pending.target !== index) return;
+    measureCopy(stageRef.current, "new");
+    pendingCapture.current = null;
+    pending.resolve();
+  }, [index]);
+
   useEffect(() => {
     if (committedIndex.current !== index) {
-      if (import.meta.env.DEV) console.debug("PPT external", index, committedIndex.current, requestedIndex.current);
       transitionId.current += 1;
       transitionRef.current?.skipTransition();
       transitionRef.current = null;
+      pendingCapture.current?.resolve();
+      pendingCapture.current = null;
       requestedIndex.current = index;
       committedIndex.current = index;
       delete document.documentElement.dataset.pptDirection;
+      clearCopyMetrics();
     }
   }, [index]);
 
   useEffect(() => () => {
     transitionId.current += 1;
     transitionRef.current?.skipTransition();
+    pendingCapture.current?.resolve();
+    pendingCapture.current = null;
     delete document.documentElement.dataset.pptDirection;
+    clearCopyMetrics();
   }, []);
 
   useEffect(() => {
@@ -191,7 +229,7 @@ export default function Presentation() {
     }
   }
 
-  return <main ref={stageRef} className={styles["ppt"]} data-enter-direction={fallbackDirection} aria-label="Hapalin 프로젝트 발표">
+  return <main ref={stageRef} className={styles["ppt"]} data-enter-direction={fallbackEntry?.target === index ? fallbackEntry.direction : undefined} aria-label="Hapalin 프로젝트 발표">
     <div className={styles["ppt-viewport"]}>
       {slides.map((slide, i) => <section key={slide.id} className={styles["ppt-slide"]} hidden={i !== index} aria-hidden={i !== index} aria-label={`${i + 1}. ${slide.title}`} data-slide={i + 1} data-kind={slide.id}>
         {["intro", "views", "workspace", "continue", "closing"].includes(slide.id) && <div className={styles["ppt-atmosphere"]} aria-hidden="true"><span /><span /><span /><PresentationArtwork kind={slide.id === "intro" || slide.id === "workspace" ? "layers" : slide.id === "closing" ? "horizon" : "flow"} /></div>}

@@ -3,6 +3,7 @@ import { Navigate, Routes, Route } from "react-router-dom";
 import Login from "@/pages/Login";
 import Landing from "@/pages/Landing";
 import Dashboard from "@/pages/Dashboard";
+import { ProjectWorkspace } from "@/components/dashboard/project-workspace";
 import DashboardActivity from "@/pages/DashboardActivity";
 import DashboardSettings from "@/pages/DashboardSettings";
 import { SettingsAppearance, SettingsInvoices, SettingsMembers, SettingsPlans } from "@/pages/DashboardSettingsSections";
@@ -30,6 +31,7 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<DashboardLayout />}>
           <Route index element={<Dashboard />} />
+          <Route path="projects" element={<ProjectWorkspace />} />
           <Route path="activity" element={<DashboardActivity />} />
           <Route path="settings" element={<DashboardSettings />} />
           <Route path="settings/members" element={<SettingsMembers />} />

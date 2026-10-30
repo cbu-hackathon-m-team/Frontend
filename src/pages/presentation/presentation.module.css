@@ -208,10 +208,15 @@
 :global(html[data-ppt-direction="jump"]) { --ppt-enter: 0px; --ppt-exit: 0px; --ppt-enter-time: var(--motion-control); --ppt-surface-time: var(--motion-control); }
 :global(html[data-ppt-direction]) .ppt-viewport { view-transition-name: hapalin-deck; }
 :global(html[data-ppt-direction]) .ppt-slide:not([hidden]) .ppt-content { view-transition-name: hapalin-content; }
+:global(html[data-ppt-direction]) .ppt-slide:not([hidden]) .ppt-message > :is(h1, h2) { view-transition-name: hapalin-title; }
+:global(html[data-ppt-direction]) .ppt-slide:not([hidden]) .ppt-message > p { view-transition-name: hapalin-lead; }
 :global(html[data-ppt-direction]) .ppt * { animation-play-state: paused !important; transition: none !important; }
 :global(html[data-ppt-direction]::view-transition) { pointer-events: none; }
+/* A timed, stationary group keeps child snapshot animations alive in Chrome. */
 :global(html[data-ppt-direction]::view-transition-group(hapalin-deck)),
-:global(html[data-ppt-direction]::view-transition-group(hapalin-content)) { animation: none; }
+:global(html[data-ppt-direction]::view-transition-group(hapalin-content)),
+:global(html[data-ppt-direction]::view-transition-group(hapalin-title)),
+:global(html[data-ppt-direction]::view-transition-group(hapalin-lead)) { animation: ppt-capture-hold var(--ppt-enter-time) linear both; }
 :global(html[data-ppt-direction]::view-transition-group(hapalin-deck)) { z-index: 0; }
 :global(html[data-ppt-direction]::view-transition-group(hapalin-content)) { z-index: 1; }
 :global(html[data-ppt-direction]::view-transition-old(hapalin-deck)),
@@ -224,6 +229,7 @@
 :global(html[data-ppt-direction]::view-transition-new(hapalin-content)) { animation: ppt-content-in var(--ppt-enter-time) var(--ppt-settle) both; }
 :global(html[data-ppt-direction="jump"]::view-transition-new(hapalin-content)) { animation: ppt-jump-in var(--motion-control) var(--ease-in-out) both; }
 @keyframes ppt-surface-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes ppt-capture-hold { from { opacity: 1; } to { opacity: 1; } }
 @keyframes ppt-content-out { to { opacity: 0; transform: translate3d(var(--ppt-exit), 0, 0); } }
 @keyframes ppt-content-in {
   0% { opacity: 0; transform: translate3d(var(--ppt-enter), 0, 0); }
@@ -231,6 +237,33 @@
   52% { opacity: 1; }
   100% { opacity: 1; transform: none; }
 }
+
+/* Independent copy snapshots keep their measured rectangles instead of morphing type. */
+:global(html[data-ppt-direction]::view-transition-group(hapalin-title)),
+:global(html[data-ppt-direction]::view-transition-group(hapalin-lead)) { inset: 0; width: 100%; height: 100%; transform: none; z-index: 2; }
+:global(html[data-ppt-direction]::view-transition-old(hapalin-title)),
+:global(html[data-ppt-direction]::view-transition-new(hapalin-title)),
+:global(html[data-ppt-direction]::view-transition-old(hapalin-lead)),
+:global(html[data-ppt-direction]::view-transition-new(hapalin-lead)) { position: absolute; margin: 0; mix-blend-mode: normal; }
+:global(html[data-ppt-direction]::view-transition-old(hapalin-title)) { left: var(--ppt-old-title-x); top: var(--ppt-old-title-y); width: var(--ppt-old-title-w); height: var(--ppt-old-title-h); }
+:global(html[data-ppt-direction]::view-transition-old(hapalin-lead)) { left: var(--ppt-old-lead-x); top: var(--ppt-old-lead-y); width: var(--ppt-old-lead-w); height: var(--ppt-old-lead-h); }
+:global(html[data-ppt-direction]::view-transition-new(hapalin-title)) { left: var(--ppt-new-title-x); top: var(--ppt-new-title-y); width: var(--ppt-new-title-w); height: var(--ppt-new-title-h); }
+:global(html[data-ppt-direction]::view-transition-new(hapalin-lead)) { left: var(--ppt-new-lead-x); top: var(--ppt-new-lead-y); width: var(--ppt-new-lead-w); height: var(--ppt-new-lead-h); }
+
+:global(html[data-ppt-direction]::view-transition-old(hapalin-title)),
+:global(html[data-ppt-direction]::view-transition-old(hapalin-lead)) { animation: ppt-copy-out var(--motion-responsive) var(--ease-out) both; }
+:global(html[data-ppt-direction]::view-transition-new(hapalin-title)) { animation: ppt-title-rise calc(var(--motion-control) * 2) var(--ppt-settle) calc(var(--motion-responsive) / 3) both; }
+:global(html[data-ppt-direction]::view-transition-new(hapalin-lead)) { animation: ppt-lead-rise var(--motion-panel) var(--ppt-settle) var(--motion-responsive) both; }
+:global(html[data-ppt-direction="jump"]::view-transition-old(hapalin-title)),
+:global(html[data-ppt-direction="jump"]::view-transition-old(hapalin-lead)) { animation: ppt-copy-fade-out var(--motion-responsive) var(--ease-out) both; }
+:global(html[data-ppt-direction="jump"]::view-transition-new(hapalin-title)) { animation: ppt-jump-in var(--motion-control) var(--ease-in-out) both; }
+:global(html[data-ppt-direction="jump"]::view-transition-new(hapalin-lead)) { animation: ppt-jump-in var(--motion-responsive) var(--ease-out) calc(var(--motion-responsive) / 3) both; }
+.ppt[data-enter-direction] .ppt-slide:not([hidden]) .ppt-message > :is(h1, h2) { animation: ppt-title-rise calc(var(--motion-control) * 2) var(--ease-out) calc(var(--motion-responsive) / 3) both; }
+.ppt[data-enter-direction] .ppt-slide:not([hidden]) .ppt-message > p { animation: ppt-lead-rise var(--motion-panel) var(--ease-out) var(--motion-responsive) both; }
+@keyframes ppt-title-rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes ppt-lead-rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes ppt-copy-out { to { opacity: 0; transform: translateY(-6px); } }
+@keyframes ppt-copy-fade-out { to { opacity: 0; } }
 
 /* Composited light fields stay behind real product UI; only visible scenes run. */
 .ppt-atmosphere { position: absolute; inset: 0; overflow: clip; pointer-events: none; z-index: 0; }
@@ -313,6 +346,14 @@
   .ppt-slide[data-kind="intro"] .ppt-message h1 { font-size: calc(var(--ppt-unit) * 4.8); }
 }
 @media (prefers-reduced-motion: reduce) {
+  :global(html[data-ppt-direction]::view-transition-group(hapalin-title)),
+  :global(html[data-ppt-direction]::view-transition-old(hapalin-title)),
+  :global(html[data-ppt-direction]::view-transition-new(hapalin-title)),
+  :global(html[data-ppt-direction]::view-transition-group(hapalin-lead)),
+  :global(html[data-ppt-direction]::view-transition-old(hapalin-lead)),
+  :global(html[data-ppt-direction]::view-transition-new(hapalin-lead)),
+  :global(html[data-ppt-direction]::view-transition-group(hapalin-deck)),
+  :global(html[data-ppt-direction]::view-transition-group(hapalin-content)),
   :global(html[data-ppt-direction]::view-transition-old(hapalin-deck)),
   :global(html[data-ppt-direction]::view-transition-new(hapalin-deck)),
   :global(html[data-ppt-direction]::view-transition-old(hapalin-content)),
