@@ -55,23 +55,26 @@ function DetailContent({
         <div className="flex min-w-0 flex-col gap-3">
           <div className="flex min-w-0 flex-wrap items-center gap-3">
             <h2 className="type-heading-md break-keep">{result.title}</h2>
-            <Badge
-              variant={
-                result.outcome === "regression"
-                  ? "error"
-                  : result.outcome === "passed"
-                    ? "success"
-                    : "muted"
-              }
-            >
-              {result.source === "preview"
-                ? "실행 전"
-                : result.awaitingResults
-                  ? result.status === "QUEUED"
-                    ? "대기 중"
-                    : "실행 중"
-                  : outcomeLabel[result.outcome]}
-            </Badge>
+            {(result.awaitingResults ||
+              result.title !== outcomeLabel[result.outcome]) && (
+              <Badge
+                variant={
+                  result.outcome === "regression"
+                    ? "error"
+                    : result.outcome === "passed"
+                      ? "success"
+                      : "muted"
+                }
+              >
+                {result.source === "preview"
+                  ? "실행 전"
+                  : result.awaitingResults
+                    ? result.status === "QUEUED"
+                      ? "대기 중"
+                      : "실행 중"
+                    : outcomeLabel[result.outcome]}
+              </Badge>
+            )}
             <span className="type-code-sm text-interface-muted">
               {result.source === "preview"
                 ? "미리보기"
@@ -95,7 +98,9 @@ function DetailContent({
             {result.execution?.kind === "example" && (
               <Badge variant="muted">화면 예시 · 실제 실행 아님</Badge>
             )}
-            {result.control && <Badge variant="outline">동일 버전 대조군</Badge>}
+            {result.control && (
+              <Badge variant="outline">동일 버전 대조군</Badge>
+            )}
             {result.createdAt && (
               <time dateTime={result.createdAt}>
                 {new Date(result.createdAt).toLocaleString("ko-KR")}

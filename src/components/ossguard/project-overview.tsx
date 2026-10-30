@@ -52,21 +52,24 @@ export function ProjectOverview({
           <div className="grid gap-5 p-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
             <div className="flex min-w-0 flex-col items-start gap-3">
               <div className="flex flex-wrap items-center gap-3">
-                <Badge
-                  variant={
-                    latest.outcome === "regression"
-                      ? "error"
-                      : latest.outcome === "passed"
-                        ? "success"
-                        : "warning"
-                  }
-                >
-                  {latest.awaitingResults
-                    ? latest.status === "QUEUED"
-                      ? "대기 중"
-                      : "실행 중"
-                    : outcomeLabel[latest.outcome]}
-                </Badge>
+                {(latest.awaitingResults ||
+                  latest.title !== outcomeLabel[latest.outcome]) && (
+                  <Badge
+                    variant={
+                      latest.outcome === "regression"
+                        ? "error"
+                        : latest.outcome === "passed"
+                          ? "success"
+                          : "warning"
+                    }
+                  >
+                    {latest.awaitingResults
+                      ? latest.status === "QUEUED"
+                        ? "대기 중"
+                        : "실행 중"
+                      : outcomeLabel[latest.outcome]}
+                  </Badge>
+                )}
                 <span className="type-code-sm text-interface-muted">
                   {executionLabel}
                 </span>
@@ -92,7 +95,9 @@ export function ProjectOverview({
             <EmptyHeader>
               <EmptyTitle>아직 실행한 검증이 없습니다</EmptyTitle>
               <EmptyDescription>
-                실행 설정과 업무 테스트를 준비하면 첫 검증을 시작할 수 있습니다.
+                {configured && draft.confirmed
+                  ? "검증 시작을 눌러 기준 A와 후보 B를 비교하세요."
+                  : "실행 설정과 업무 테스트를 준비하면 첫 검증을 시작할 수 있습니다."}
               </EmptyDescription>
             </EmptyHeader>
           </Empty>

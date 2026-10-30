@@ -45,3 +45,9 @@
 발견해 수정한 문제: 모바일 디자인 시스템 소개 타일에서 견본과 레이블의 겹침, 테스트 이름의 말줄임, 모바일에 없던 결과 필터와 빈 필터 결과, 비교 콘텐츠의 최소 너비 처리.
 
 화면 점검 자료는 `output/design-review/`에 보관한다. 후속 통합 점검에서 실제 Runner·Docker·WireMock과 브라우저 연동을 확인했다. 소스 전달은 로컬 샘플 대역이며 유료 AI·실제 이메일·GCP 권한은 미확인이다. 연결 방법과 확인 범위는 `INTEGRATION.md`를 따른다.
+
+## 실행 기본값과 후속 검토
+
+[Vercel의 실행 목록→상세](https://vercel.com/docs/deployments/managing-deployments), [Supabase의 필터→이벤트 조사](https://supabase.com/docs/guides/observability/logs), [Grafana Explore의 비교·조사](https://grafana.com/docs/grafana/latest/visualizations/explore/get-started-with-explore/) 의도와 다시 대조했다. 판정 요약, 개별 테스트 선택, A/B 관측값, 호출 증거, 변경 파일과 로그는 각각 다른 질문에 답하므로 유지한다. 같은 판정을 제목과 배지로 반복하는 경우 배지만 생략하고, 등록 폼이 열렸을 때 겹치던 첫 저장소 안내를 숨긴다. 준비 완료 상태에서는 설정을 다시 작성하라는 문구 대신 실행 행동을 안내한다. 입력은 FieldGroup/Field, 구분선은 Separator, 저장 피드백은 Sonner를 사용한다.
+
+실제 공개 샘플 저장소 URL과 이름·브랜치를 채우고, 검사 결과에서 단일 의존성과 샘플 목표 버전을 선택한다. 사용자가 고른 버전은 유지하며 다른 저장소에는 샘플 버전을 넣지 않는다. 실제 GitHub에서 가져온 두 실행이 완료됐고, Windows Git 객체 정리 문제도 수정해 연속 실행을 확인했다. 이메일 수신 주소나 비밀값은 임의로 만들지 않는다.

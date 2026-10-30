@@ -397,7 +397,16 @@ export function runPresentation(
             storedText(env.build_log),
             id === "update" ? storedText(update.update_log) : "",
             id === "cleanup"
-              ? JSON.stringify(evidence.cleanup ?? {}, null, 2)
+              ? JSON.stringify(
+                  evidence.recovery_cleanup
+                    ? {
+                        initial: evidence.cleanup,
+                        recovery: evidence.recovery_cleanup,
+                      }
+                    : (evidence.cleanup ?? {}),
+                  null,
+                  2,
+                )
               : "",
           ]
             .filter(Boolean)

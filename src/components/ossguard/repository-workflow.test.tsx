@@ -59,7 +59,10 @@ it("opens build failure in execution details and keeps missing installed version
   expect(screen.getByText("pyproject.toml")).toBeInTheDocument();
 });
 it("validates the repository-based setup and never reuses observations for a modified JSON request", () => {
-  expect(repositoryReady(pythonDemo)).toBe(false);
+  expect(repositoryReady(pythonDemo)).toBe(true);
+  expect(
+    repositoryReady({ ...pythonDemo, repository: { url: "", ref: "main" } }),
+  ).toBe(false);
   const configured = {
     ...pythonDemo,
     repository: { url: "https://github.com/team/app", ref: "main" },

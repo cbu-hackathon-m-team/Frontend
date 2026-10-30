@@ -12,6 +12,7 @@ import { BackendWorkspace } from "./backend-workspace";
 import { ServerConsole } from "./server-console";
 import { ServerTests } from "./server-tests";
 import { GuardApi } from "./api";
+import { purchaseDemo } from "./execution-defaults";
 import {
   apiProject,
   apiRun,
@@ -33,6 +34,76 @@ afterEach(() => {
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
 });
+
+it("prefills a runnable public repository and keeps the registration form as the next action", async () => {
+  sessionStorage.setItem("ossguard.api-session", "test-token");
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async () => jsonResponse([])),
+  );
+  render(
+    <MemoryRouter>
+      <BackendProvider>
+        <BackendWorkspace />
+      </BackendProvider>
+    </MemoryRouter>,
+  );
+  await waitFor(() =>
+    expect(screen.getByRole("button", { name: "새 프로젝트" })).toBeEnabled(),
+  );
+  fireEvent.click(screen.getByRole("button", { name: "새 프로젝트" }));
+  expect(screen.getByLabelText("저장소 URL")).toHaveValue(
+    purchaseDemo.repository,
+  );
+  expect(screen.getByLabelText("프로젝트 이름")).toHaveValue(purchaseDemo.name);
+  expect(screen.getByLabelText("브랜치·태그·커밋")).toHaveValue("main");
+  expect(screen.queryByText("첫 저장소를 등록하세요")).not.toBeInTheDocument();
+  fireEvent.change(screen.getByLabelText("저장소 URL"), {
+    target: { value: "https://github.com/team/other" },
+  });
+  expect(screen.getByLabelText("저장소 URL")).toHaveValue(
+    "https://github.com/team/other",
+  );
+});
+
+it.each([
+  [purchaseDemo.repository, undefined, "2.12.5"],
+  [purchaseDemo.repository, "1.10.24", "1.10.24"],
+  ["https://github.com/team/other", undefined, ""],
+])(
+  "fills only the sample target and retains explicit selections: %s / %s",
+  async (repository, target, expected) => {
+    sessionStorage.setItem("ossguard.api-session", "test-token");
+    if (target)
+      sessionStorage.setItem(
+        `ossguard.selection.${projectId}`,
+        JSON.stringify({ packageName: "pydantic", target }),
+      );
+    const project = { ...apiProject, repository_url: repository! };
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string) => {
+        if (url.startsWith("/api/projects?")) return jsonResponse([project]);
+        if (url === `/api/projects/${projectId}`) return jsonResponse(project);
+        if (url.includes("/dependencies/"))
+          return jsonResponse({ versions: ["2.12.5", "1.10.24"] });
+        if (url.startsWith("/api/validations?")) return jsonResponse([]);
+        throw new Error(`Unexpected request: ${url}`);
+      }),
+    );
+    render(
+      <MemoryRouter
+        initialEntries={[`/dashboard?project=${projectId}&tab=setup`]}
+      >
+        <BackendProvider>
+          <ServerConsole id={projectId} />
+        </BackendProvider>
+      </MemoryRouter>,
+    );
+    expect(await screen.findByLabelText("목표 버전")).toHaveValue(expected);
+    expect(screen.getByLabelText("직접 의존성")).toHaveTextContent("pydantic");
+  },
+);
 
 it("connects using a session-only bearer token and never stores it in local storage", async () => {
   const fetcher = vi.fn(async (_url, init) => {

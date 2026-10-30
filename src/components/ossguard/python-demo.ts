@@ -1,4 +1,5 @@
 import { cases } from "./sample";
+import { purchaseDemo } from "./execution-defaults";
 import {
   executionContext,
   type Observation,
@@ -236,9 +237,13 @@ export const pythonDemo: ValidationProject = {
     id: "python-uv",
     name: "Python / uv",
     adapter: "python-uv",
-    source: "",
+    source: purchaseDemo.repository,
   },
-  repository: { url: "", ref: "main", inspection: "unchecked" },
+  repository: {
+    url: purchaseDemo.repository,
+    ref: purchaseDemo.ref,
+    inspection: "unchecked",
+  },
   update: {
     ecosystem: "python-uv",
     packageName: "pydantic",
@@ -256,7 +261,7 @@ export const pythonDemo: ValidationProject = {
   },
   baseline: { label: "pydantic 1.10.24", artifact: "uv.lock · 원본" },
   candidate: { label: "pydantic 2.12.5", artifact: "uv.lock · 변경 후" },
-  rule: "결제 완료이고 재고가 충분하면 응답 재고를 주문 수량만큼 줄이고 배송 API를 1회 호출한다. 결제 실패·재고 부족이면 배송 API를 호출하지 않는다.",
+  rule: purchaseDemo.rule,
   steps: [
     { key: "request", label: "업무 요청" },
     { key: "shipping", label: "배송 API" },

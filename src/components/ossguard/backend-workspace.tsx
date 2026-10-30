@@ -4,7 +4,13 @@ import { ArrowRight, Plus, RefreshCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Field, FieldLabel, FieldDescription } from "@/components/ui/field";
+import {
+  Field,
+  FieldGroup,
+  FieldLabel,
+  FieldDescription,
+} from "@/components/ui/field";
+import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
@@ -19,6 +25,7 @@ import { projectHref } from "./model";
 import { readProjects } from "@/components/dashboard/projects";
 import { selectedProject } from "./demo-project";
 import { readDraft } from "./draft";
+import { purchaseDemo } from "./execution-defaults";
 
 export function BackendConnection() {
   const { api, loading, error, connect, disconnect, refresh } = useBackend();
@@ -35,7 +42,7 @@ export function BackendConnection() {
               disabled={loading}
               onClick={() => void refresh()}
             >
-              <RefreshCw />
+              <RefreshCw data-icon="inline-start" />
               새로고침
             </Button>
             <Button variant="ghost" size="sm" onClick={disconnect}>
@@ -50,30 +57,37 @@ export function BackendConnection() {
           </CardHeader>
           <CardContent className="px-5 md:px-5 md:pb-5">
             <form
-              className="flex flex-wrap items-end gap-3"
               onSubmit={(e) => {
                 e.preventDefault();
                 void connect(token).then(() => setToken(""));
               }}
             >
-              <Field className="min-w-0 flex-1">
-                <FieldLabel htmlFor="team-token">팀 토큰</FieldLabel>
-                <Input
-                  id="team-token"
-                  type="password"
-                  autoComplete="off"
-                  value={token}
-                  onChange={(e) => setToken(e.target.value)}
-                  required
-                  disabled={loading}
-                />
-                <FieldDescription>
-                  현재 탭에서만 연결을 유지합니다.
-                </FieldDescription>
-              </Field>
-              <Button disabled={loading || !token.trim()}>
-                {loading ? "연결 중…" : "서버 연결"}
-              </Button>
+              <FieldGroup>
+                <Field>
+                  <FieldLabel htmlFor="team-token">팀 토큰</FieldLabel>
+                  <div className="flex flex-col gap-3 sm:flex-row">
+                    <Input
+                      className="min-w-0 flex-1"
+                      id="team-token"
+                      type="password"
+                      autoComplete="off"
+                      value={token}
+                      onChange={(e) => setToken(e.target.value)}
+                      required
+                      disabled={loading}
+                    />
+                    <Button
+                      className="shrink-0"
+                      disabled={loading || !token.trim()}
+                    >
+                      {loading ? "연결 중…" : "서버 연결"}
+                    </Button>
+                  </div>
+                  <FieldDescription>
+                    현재 탭에서만 연결을 유지합니다.
+                  </FieldDescription>
+                </Field>
+              </FieldGroup>
             </form>
           </CardContent>
         </Card>
@@ -142,7 +156,7 @@ export function BackendWorkspace() {
           disabled={!api || loading}
           onClick={() => setCreating(!creating)}
         >
-          <Plus />새 프로젝트
+          <Plus data-icon="inline-start" />새 프로젝트
         </Button>
       </div>
       <BackendConnection />
@@ -152,49 +166,52 @@ export function BackendWorkspace() {
             <CardTitle>공개 GitHub 저장소 등록</CardTitle>
           </CardHeader>
           <CardContent className="px-5 md:px-5">
-            <form
-              onSubmit={(e) => void create(e)}
-              className="flex flex-col gap-4"
-            >
-              <Field>
-                <FieldLabel htmlFor="server-name">프로젝트 이름</FieldLabel>
-                <Input
-                  id="server-name"
-                  name="name"
-                  defaultValue={imported?.name ?? ""}
-                  required
-                  maxLength={120}
-                  disabled={busy}
-                />
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="server-repository">저장소 URL</FieldLabel>
-                <Input
-                  id="server-repository"
-                  name="repository"
-                  defaultValue={imported?.repository?.url ?? ""}
-                  type="url"
-                  required
-                  placeholder="https://github.com/team/service"
-                  disabled={busy}
-                />
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="server-ref">브랜치·태그·커밋</FieldLabel>
-                <Input
-                  id="server-ref"
-                  name="ref"
-                  defaultValue={imported?.repository?.ref || "main"}
-                  required
-                  disabled={busy}
-                />
-              </Field>
+            <form onSubmit={(e) => void create(e)}>
+              <FieldGroup className="gap-4">
+                <Field>
+                  <FieldLabel htmlFor="server-name">프로젝트 이름</FieldLabel>
+                  <Input
+                    id="server-name"
+                    name="name"
+                    defaultValue={imported?.name ?? purchaseDemo.name}
+                    required
+                    maxLength={120}
+                    disabled={busy}
+                  />
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor="server-repository">
+                    저장소 URL
+                  </FieldLabel>
+                  <Input
+                    id="server-repository"
+                    name="repository"
+                    defaultValue={
+                      imported?.repository?.url ?? purchaseDemo.repository
+                    }
+                    type="url"
+                    required
+                    placeholder="https://github.com/team/service"
+                    disabled={busy}
+                  />
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor="server-ref">브랜치·태그·커밋</FieldLabel>
+                  <Input
+                    id="server-ref"
+                    name="ref"
+                    defaultValue={imported?.repository?.ref || purchaseDemo.ref}
+                    required
+                    disabled={busy}
+                  />
+                </Field>
+              </FieldGroup>
               {error && (
                 <Alert variant="destructive">
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
               )}
-              <div className="flex gap-2">
+              <div className="mt-4 flex gap-2">
                 <Button disabled={busy}>
                   {busy ? "등록 중…" : "저장소 등록"}
                 </Button>
@@ -235,7 +252,7 @@ export function BackendWorkspace() {
                 <Button variant="ghost" asChild>
                   <Link to={projectHref(p.id)}>
                     프로젝트 열기
-                    <ArrowRight />
+                    <ArrowRight data-icon="inline-end" />
                   </Link>
                 </Button>
               </CardContent>
@@ -243,7 +260,7 @@ export function BackendWorkspace() {
           ))}
         </div>
       )}
-      {api && !projects.length && !loading && (
+      {api && !projects.length && !loading && !creating && (
         <Empty variant="panel">
           <EmptyHeader>
             <EmptyTitle>첫 저장소를 등록하세요</EmptyTitle>
@@ -253,12 +270,13 @@ export function BackendWorkspace() {
           </EmptyHeader>
         </Empty>
       )}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-boundary-subtle pt-4 type-body-sm text-interface-secondary">
+      <Separator />
+      <div className="flex flex-wrap items-center justify-between gap-3 type-body-sm text-interface-secondary">
         <span>연결 없이 화면을 둘러볼 수 있습니다.</span>
         <Button variant="outline" asChild>
           <Link to={projectHref("python-uv-demo", "results")}>
             화면 예시
-            <ArrowRight />
+            <ArrowRight data-icon="inline-end" />
           </Link>
         </Button>
       </div>

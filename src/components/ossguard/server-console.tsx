@@ -34,21 +34,30 @@ import { ServerSetup } from "./server-setup";
 import { ServerTests } from "./server-tests";
 import { ProjectOverview } from "./project-overview";
 import type { GuardDraft } from "./draft";
+import { purchaseDemo } from "./execution-defaults";
 
 interface Selection {
   packageName: string;
   target: string;
   suiteId?: string;
 }
-function readSelection(id: string): Selection {
+function readSelection(id: string, project?: ApiProject): Selection {
   try {
     const value = JSON.parse(
       sessionStorage.getItem(`ossguard.selection.${id}`) ?? "{}",
     );
+    const dependencies = project?.inspection.dependencies ?? [];
+    const packageName =
+      (typeof value.packageName === "string" ? value.packageName : "") ||
+      (dependencies.length === 1 ? dependencies[0].name : "");
     return {
-      packageName:
-        typeof value.packageName === "string" ? value.packageName : "",
-      target: typeof value.target === "string" ? value.target : "",
+      packageName,
+      target:
+        (typeof value.target === "string" ? value.target : "") ||
+        (project?.repository_url === purchaseDemo.repository &&
+        packageName === purchaseDemo.packageName
+          ? purchaseDemo.targetVersion
+          : ""),
       suiteId: typeof value.suiteId === "string" ? value.suiteId : undefined,
     };
   } catch {
@@ -106,7 +115,12 @@ export function ServerConsole({ id }: { id: string }) {
       const [p, history] = await Promise.all([api.project(id), api.runs(id)]);
       setProject(p);
       setRuns(history);
-      setRule(p.rules.description ?? "");
+      setRule(
+        p.rules.description ??
+          (p.repository_url === purchaseDemo.repository
+            ? purchaseDemo.rule
+            : ""),
+      );
       const preferred = suiteId ?? readSelection(id).suiteId;
       const tests = p.test_suites?.find((s) => s.id === preferred) ??
         p.test_suites?.[0] ?? { cases: [], stubs: [], approved: false };
@@ -114,17 +128,18 @@ export function ServerConsole({ id }: { id: string }) {
       setDirty(false);
       setLoaded(true);
       setError("");
-      if (suiteId) {
-        const next = { ...readSelection(id), suiteId };
-        setSelection(next);
-        try {
-          sessionStorage.setItem(
-            `ossguard.selection.${id}`,
-            JSON.stringify(next),
-          );
-        } catch {
-          /* Selection remains in memory. */
-        }
+      const next = {
+        ...readSelection(id, p),
+        ...(suiteId ? { suiteId } : {}),
+      };
+      setSelection(next);
+      try {
+        sessionStorage.setItem(
+          `ossguard.selection.${id}`,
+          JSON.stringify(next),
+        );
+      } catch {
+        /* Selection remains in memory. */
       }
     },
     [api, id],
@@ -138,8 +153,14 @@ export function ServerConsole({ id }: { id: string }) {
     ])
       .then(([p, history]) => {
         setProject(p);
+        setSelection(readSelection(id, p));
         setRuns(history);
-        setRule(p.rules.description ?? "");
+        setRule(
+          p.rules.description ??
+            (p.repository_url === purchaseDemo.repository
+              ? purchaseDemo.rule
+              : ""),
+        );
         const preferred = readSelection(id).suiteId;
         setSuite(
           p.test_suites?.find((s) => s.id === preferred) ??
@@ -443,7 +464,9 @@ export function ServerConsole({ id }: { id: string }) {
               <EmptyHeader>
                 <EmptyTitle>아직 검증 실행이 없습니다</EmptyTitle>
                 <EmptyDescription>
-                  소스를 확인하고 테스트를 승인한 뒤 검증을 시작하세요.
+                  {ready
+                    ? "검증 시작을 누르면 새 실행이 여기에 표시됩니다."
+                    : "소스를 확인하고 테스트를 승인한 뒤 검증을 시작하세요."}
                 </EmptyDescription>
               </EmptyHeader>
             </Empty>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { GitBranch, Search } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -46,8 +47,7 @@ export function ServerSetup({
   onNext: () => void;
 }) {
   const [busy, setBusy] = useState(false),
-    [error, setError] = useState(""),
-    [saved, setSaved] = useState(false);
+    [error, setError] = useState("");
   const [profile, setProfile] = useState(project.execution_profile);
   const [environment, setEnvironment] = useState(project.environment_profile);
   const [email, setEmail] = useState(project.notification.email ?? "");
@@ -91,7 +91,6 @@ export function ServerSetup({
   async function save() {
     setBusy(true);
     setError("");
-    setSaved(false);
     try {
       await api.request(
         `/api/projects/${project.id}/execution-profile`,
@@ -112,7 +111,7 @@ export function ServerSetup({
         { enabled: !!email.trim(), email: email.trim() },
       );
       await onReload();
-      setSaved(true);
+      toast.success("실행 설정을 저장했습니다.");
     } catch (e) {
       setError(errorText(e));
     } finally {
@@ -120,7 +119,6 @@ export function ServerSetup({
     }
   }
   function changeProfile(value: Partial<ExecutionProfile>) {
-    setSaved(false);
     setProfile({ ...profile, ...value });
   }
   return (
@@ -291,7 +289,6 @@ export function ServerSetup({
                             : ""
                         }
                         onChange={(e) => {
-                          setSaved(false);
                           const group = definition.secret
                             ? "secret_refs"
                             : "values";
@@ -317,7 +314,6 @@ export function ServerSetup({
                     value={email}
                     onChange={(e) => {
                       setEmail(e.target.value);
-                      setSaved(false);
                     }}
                     disabled={busy}
                   />
@@ -326,14 +322,6 @@ export function ServerSetup({
                   <Button variant="outline" disabled={busy}>
                     {busy ? "저장 중…" : "실행 설정 저장"}
                   </Button>
-                  {saved && (
-                    <span
-                      role="status"
-                      className="type-body-sm text-signal-success"
-                    >
-                      저장됨
-                    </span>
-                  )}
                   <Button type="button" onClick={onNext} disabled={busy}>
                     업무 테스트 검토
                   </Button>
