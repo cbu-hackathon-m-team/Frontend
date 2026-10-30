@@ -63,7 +63,7 @@ export interface SampleRun {
     stages: {
       id: string;
       label: string;
-      state: "done" | "failed" | "pending" | "running";
+      state: "done" | "failed" | "pending" | "running" | "skipped";
       detail: string;
     }[];
     installedA?: string;

@@ -286,8 +286,9 @@ export function runPresentation(
   const times = record(evidence.phase_times);
   const update = record(evidence.update);
   const last = String(evidence.last_execution_phase ?? job.phase);
-  const errorPhase =
-    job.execution_status === "FAILED" || job.execution_status === "INTERRUPTED"
+  const errorPhase = job.verdict === "BASELINE_INVALID"
+    ? "baseline_test"
+    : job.execution_status === "FAILED" || job.execution_status === "INTERRUPTED"
       ? last
       : "";
   const lastIndex = phases.findIndex(([key]) => key === last);
@@ -384,17 +385,37 @@ export function runPresentation(
                 ? "running"
                 : times[id] && (index < lastIndex || !activeRun(job))
                   ? "done"
-                  : "pending";
+                  : activeRun(job) ? "pending" : "skipped";
         return {
           id,
           label,
           state,
           detail: [
             times[id] ? `시작: ${times[id]}` : "단계 시작 기록 없음",
-            id === errorPhase
+            id === "baseline_test" && job.verdict === "BASELINE_INVALID"
+              ? "기준 A가 승인된 테스트 조건을 충족하지 못해 후보 B 실행을 건너뛰었습니다. 업무 테스트의 기대값과 Mock 응답 설정을 확인하세요."
+              : id === errorPhase
               ? `${job.error_code}: ${job.error_message}\n${storedText(evidence.failure_log)}`
               : "",
-            storedText(env.build_log),
+            id.endsWith("_build") ? storedText(env.build_log) : "",
+            id.endsWith("_test")
+              ? retained.test_results
+                  .filter((row) => row.environment === (id === "baseline_test" ? "baseline" : "candidate"))
+                  .map((row) => {
+                    const source = job.snapshot.suite.cases.find((c) => c.id === row.case_id);
+                    return [
+                      `${row.case_id} · ${row.passed ? "통과" : "실패"}`,
+                      row.request_error ? `요청 오류: ${row.request_error}` : "",
+                      ...(row.checks ?? []).map((check) =>
+                        `${check.passed ? "통과" : "실패"} ${check.rule} · 기대 ${JSON.stringify(check.expected)} / 관측 ${JSON.stringify(check.actual)}`),
+                      ...(source?.external ?? []).map((e) =>
+                        `${e.method} ${e.path} · 기대 호출 ${e.count}회 · 기대 Mock 상태 ${e.response_status}`),
+                      ...(row.events ?? []).map((e) =>
+                        `${e.request.method} ${e.request.url} · 관측 Mock 상태 ${e.response_status} · 매칭 ${e.wasMatched ? "성공" : "실패"}`),
+                    ].filter(Boolean).join("\n");
+                  }).join("\n\n")
+              : "",
+            state === "skipped" ? "실행이 종료되어 이 단계는 수행하지 않았습니다." : "",
             id === "update" ? storedText(update.update_log) : "",
             id === "cleanup"
               ? JSON.stringify(

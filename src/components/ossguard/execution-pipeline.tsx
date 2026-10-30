@@ -1,11 +1,11 @@
-import { ArrowRight, CheckCircle2, CircleDashed, LoaderCircle, XCircle } from "lucide-react";
+import { ArrowRight, CheckCircle2, CircleDashed, CircleMinus, LoaderCircle, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { SampleRun } from "./model";
 import styles from "./execution-pipeline.module.css";
 
 type Stage = NonNullable<SampleRun["execution"]>["stages"][number];
-const stateLabel = { done: "완료", failed: "실패", running: "실행 중", pending: "대기" };
+const stateLabel = { done: "완료", failed: "실패", running: "실행 중", pending: "대기", skipped: "건너뜀" };
 
 export function ExecutionPipeline({ stages, selected, onSelect }: {
   stages: Stage[];
@@ -18,7 +18,8 @@ export function ExecutionPipeline({ stages, selected, onSelect }: {
         {stages.map((stage, index) => {
           const Icon = stage.state === "done" ? CheckCircle2
             : stage.state === "failed" ? XCircle
-            : stage.state === "running" ? LoaderCircle : CircleDashed;
+            : stage.state === "running" ? LoaderCircle
+            : stage.state === "skipped" ? CircleMinus : CircleDashed;
           return (
             <li key={stage.id} className={styles.step}>
               <Button

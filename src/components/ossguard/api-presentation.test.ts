@@ -104,3 +104,40 @@ it("does not call an invalid baseline a candidate regression", () => {
   expect(result.cases[0].outcome).toBe("baseline-failed");
   expect(result.cases[0].candidate.events).toBeUndefined();
 });
+
+it("explains a baseline mock status mismatch and marks unreached stages as skipped", () => {
+  const source = structuredClone(apiRun.snapshot);
+  source.suite.cases[0].external[0].response_status = 196;
+  const row = structuredClone(apiEvidence.test_results[0]);
+  row.passed = false;
+  row.checks![2].passed = false;
+  const { result } = runPresentation(apiProject, {
+    ...apiRun, snapshot: source, verdict: "BASELINE_INVALID",
+  }, {
+    evidence: {
+      phase_times: { source: "2026-10-31T00:00:00Z", baseline_build: "2026-10-31T00:00:01Z", baseline_test: "2026-10-31T00:00:02Z" },
+      last_execution_phase: "baseline_test",
+      baseline: { build_log: "BUILD LOG ONLY" },
+    },
+    test_results: [row],
+  });
+  const stages = result.execution!.stages;
+  const baseline = stages.find((s) => s.id === "baseline_test")!;
+  expect(baseline.state).toBe("failed");
+  expect(baseline.detail).toContain("기대 Mock 상태 196");
+  expect(baseline.detail).toContain("관측 Mock 상태 200");
+  expect(baseline.detail).not.toContain("BUILD LOG ONLY");
+  expect(stages.find((s) => s.id === "baseline_build")?.detail).toContain("BUILD LOG ONLY");
+  for (const id of ["update", "candidate_build", "candidate_test", "compare"]) {
+    expect(stages.find((s) => s.id === id)?.state).toBe("skipped");
+  }
+  expect(stages.find((s) => s.id === "cleanup")?.state).toBe("done");
+});
+
+it("keeps unreached stages pending while a validation is running", () => {
+  const { result } = runPresentation(apiProject, {
+    ...apiRun, execution_status: "RUNNING", phase: "baseline_test", verdict: "NOT_EVALUATED",
+  }, { evidence: { phase_times: { baseline_test: "2026-10-31T00:00:01Z" } }, test_results: [] });
+  expect(result.execution?.stages.find((s) => s.id === "baseline_test")?.state).toBe("running");
+  expect(result.execution?.stages.find((s) => s.id === "update")?.state).toBe("pending");
+});

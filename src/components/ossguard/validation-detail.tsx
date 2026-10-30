@@ -34,8 +34,10 @@ function DetailContent({
     result.execution?.stages.find((s) => s.id === stageId) ??
     initialStage;
   const [tab, setTab] = useState(
-    result.execution?.stages.some((s) => s.state === "failed") &&
+    result.outcome === "baseline-failed" ||
+    (result.execution?.stages.some((s) => s.state === "failed") &&
       result.cases.every((c) => c.outcome === "unverified")
+    )
       ? "execution"
       : "comparison",
   );
@@ -230,7 +232,7 @@ function DetailContent({
                 </h3>
                 {stage && (
                   <Badge variant={stage.state === "done" ? "success" : stage.state === "failed" ? "error" : "muted"}>
-                    {{ done: "완료", failed: "실패", running: "실행 중", pending: "대기" }[stage.state]}
+                    {{ done: "완료", failed: "실패", running: "실행 중", pending: "대기", skipped: "건너뜀" }[stage.state]}
                   </Badge>
                 )}
               </div>

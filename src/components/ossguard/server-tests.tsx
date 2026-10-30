@@ -515,7 +515,7 @@ export function ServerTests({
                     </Field>
                     <Field>
                       <FieldLabel htmlFor={`external-status-${index}`}>
-                        Mock 응답 상태
+                        기대 Mock 응답 상태
                       </FieldLabel>
                       <Input
                         id={`external-status-${index}`}
