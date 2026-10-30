@@ -1,33 +1,50 @@
-# Hapalin product presentation
+# OSSGuard web presentation
 
-Open /ppt for the 15-slide service introduction. Hash links such as /ppt#10 open a specific slide.
+`/ppt` is a 12-slide introduction aligned with the shortened 3:50 script. `/ppt#4` opens the Pydantic reproduction case.
 
-The story introduces website-project creation and management: project ideas, naming and descriptions, an overview, search, card/list views, recent changes, a hands-on sample, workspace settings and continuing saved work. Slide 14 clearly separates current project-management features from planned editing, publishing and collaboration. There is no design-system or implementation-stack pitch.
+## Story and script timing
 
-## Presentation controls
+| Slides | Script section | Content |
+| --- | --- | --- |
+| 1–2 | 0:00–0:25 · Introduction | OSSGuard and updates that can silently break existing work |
+| 3–4 | 0:25–1:20 · Reproduced problem | Order/shipping flow, Pydantic equality change, unchanged HTTP/stock responses and a missing shipping request |
+| 5–10 | 1:20–3:00 · Verification | Repository/version choice, business criteria, human approval, copies, Docker, WireMock, control baseline, evidence, AI explanation and email |
+| 11–12 | 3:00–3:50 · Differentiation and closing | The connected verification flow, AI's limited role, Python MVP and evidence for the update decision |
 
-- Arrow keys, Page Up/Down and Space move between slides; Home/End move to the first/last.
-- Controls appear when the pointer reaches the bottom 24px edge, stay reachable while the pointer is on the controls, and hide after it leaves. Keyboard focus also reveals them.
-- No top-corner labels, chapter labels, persistent slide footer or progress bar are rendered.
-- Fullscreen targets the document so native Radix portal dialogs remain visible. Browser restrictions may require F11.
-- This is a web presentation. There is no print/PDF control or print-export stylesheet.
+Copy follows the project specification in `docs/OSSGuard_MVP_구현계획_기능명세서.md` and the supplied presentation script. Product behavior describes the intended verification flow. The interactive comparison illustrates the reproduction described in the supplied script; it does not submit a live production run. Actual inventory database writes and real shipping are outside the example. AI judges no outcomes independently: approved criteria determine the verdict, and AI explains the recorded evidence.
 
-## Product interactions
+## Controls and interactions
 
-Slide 6 has a visible “사이트 가기” link to the landing page in a separate tab. Slide 3 switches between project-use examples. Slide 7 filters project names. Slide 8 changes card/list layout. Slide 10 supports sample creation, search, view switching and project previews. Native inputs, tabs and dialogs retain their keyboard behavior; their keys do not advance the deck.
+- Arrow keys, Page Up/Down and Space move between slides; Home/End jump to the first/last.
+- Hash navigation, outline, document fullscreen and keyboard focus behavior are preserved.
+- Controls appear at the bottom edge or on keyboard focus. No persistent corner labels, footer, progress bar or print/export control.
+- Slide 12 opens the landing or the existing dashboard example in new tabs.
+- Slide 4 uses native tabs to compare paid/unpaid orders. Tab arrow keys stay local to the example. This state stays in memory; no job is submitted and no workspace data is written.
 
-Sample state stays in memory and resets on reload. The deck does not read or write real workspace data, call an API or change appearance settings. Slide 13 opens the actual landing, login and dashboard in new tabs.
+## Visuals
 
-## Visual implementation
+Existing blue, dark and soft scene palettes, separate View Transition layers for background/copy, queued navigation, pointer parallax, gradient light fields and decorative vector scenes remain. Layouts use text, open comparison rows, process diagrams and one tabbed result example; the previous unrelated project-management forms/cards have been removed. Reduced-motion preferences disable transitions and parallax; portrait layouts stack and scroll inside the current slide.
 
-The [Hapalin reference](https://www.behance.net/gallery/252139887/Hapalin-) informs the scale hierarchy, image overlaps and alternating dark, blue and soft-gradient scenes. The live [Toss homepage](https://toss.im/) was inspected across the intro, transfer transition and asset-management section. It informs benefit-led headings, quiet space, a dominant product visual and restrained movement. Their service content and metrics are not reused.
+The deck keeps Geist / Geist Mono, semantic status colors, Hapalin scene palettes, shared Tabs/Button components and motion tokens. The 12-slide sequence combines three pairs without dropping the script's key points:
 
-The deck uses the current semantic colors, Geist typography, reference gradients and native Card, Field, Input, SearchBar, ToggleGroup, Tabs, Dialog, Alert and sidebar components. Existing local landing artwork is used only in illustrative project-use cards. Shared component colors, type and variants remain owned by the design system.
+- Slide 6 combines business inputs/expectations and user approval, including direct/project tests and AI drafts.
+- Slide 7 combines temporary copies, separate Docker environments, installed-version checks and the identical request. Its diagram branches from one GitHub source into two environments.
+- Slide 10 combines saved dependency changes and execution evidence with AI explanation and an email summary. Approved criteria determine the verdict.
 
-Scene composition alternates between an asymmetric image collage, reverse layouts, centered forms, a wide product overview, an overlapping detail card, a saved-state graphic and a two-stage roadmap. Editorial backgrounds use existing palette and gradient tokens; native UI keeps its shared light/dark appearance.
+Slide 4 keeps the Pydantic comparison and gives the missing shipping request more weight than unchanged response values. Slide 8 keeps WireMock and the outbound request journal separate. Slide 9 distinguishes regressions, execution failures, baseline failures and missing evidence. Slide 11 shows the connected verification flow and the Python MVP scope.
 
-Page navigation captures the background, fixed-size content viewport, headline and lead as separate native View Transition layers. The old background stays opaque beneath the incoming surface, avoiding a dark dip. The snapshot groups retain an explicit stationary lifetime, so Chrome does not tear down their child animations early. The background blends over 400ms and content exits over 200ms, then settles over 500ms with a scoped deceleration curve. Its brief initial opacity handoff avoids competing headlines while the small horizontal movement slows to rest. These scene durations derive from the existing control and panel tokens. Outline/Home/End jumps use a neutral 200ms dissolve. Decorations and pointer motion pause during capture and resume from the captured pose. Inputs received before capture coalesce into its latest destination. Once the current visual transition is committed, relative requests accumulate without skipping it; after it finishes, only the latest queued destination starts. Reversing an uncommitted step to the current page cancels without an intermediate flash. Unmount invalidates all queued work. Unsupported captures use a short opacity/24px entrance. Local tab content also has a brief opacity change. Blue and soft scenes have slowly moving gradient light fields, vector layer stacks, luminous curved horizons and traced connector paths. The saved-state illustration retains its shaded sphere. The drawing technique was inspected in `C:/likelion-tuk/frontend/src/components/home/track-grid.tsx` and `home.module.css`: SVG contours, token-painted surfaces, layered rim light and CSS masking. No source component, logo, device frame or editor UI was copied. Each SVG owns unique paint IDs; the scenery remains decorative and separate from the working UI. The title gradient moves across its letters. Fine-pointer movement adds a small perspective shift to the hero artwork and layered depth to the image collage, with updates coalesced through one requestAnimationFrame. Image artwork lifts or zooms slightly using the 150ms shared hover token; parallax settles over the 300ms structural token. Slim illuminated frames replace the earlier folder-shaped backplates. Native interactive controls retain their system behavior. Offscreen scenes pause their CSS animations. Reduced-motion bypasses capture, disables animations and removes parallax/hover movement. Navigation memoizes unchanged scene content to avoid reconciling fifteen hidden scenes during capture. No canvas, WebGL or animation dependency is added. Portrait layouts stack the content and scroll within the current slide.
+The wording pass uses familiar Korean descriptions for source code, startup failures and test outcomes. Numeric comparisons share rows for labels and values so arrows align with the values. Shipping counts and units share a baseline; comparison columns stay fixed, and the WireMock diagram uses equally sized nodes with a centered connector. Repeated footnotes are folded into the main explanation instead of adding small decorative copy.
 
-Headlines rise 14px over 400ms after a 50ms delay; leads rise 8px over 300ms after a 150ms delay. Both settle inside the 500ms scene transition. Their old/new rectangles are measured separately to preserve font size and wrapping across different layouts. The capture callback waits for the destination React layout commit before measuring it; temporary geometry is removed on completion or cancellation. Jump navigation uses a shorter dissolve. The unsupported-browser entrance is gated to the rendered destination. Headings and paragraphs retain their original semantic DOM; no letter splitting, blur or animation library is used. Reduced motion disables these effects.
+The local landing page informs the execution diagram and readable `pyproject.toml` diff. The presentation uses its own larger type and native layouts. Input/expectation columns, comparison rows and connectors remain aligned; explanatory footer caveats are not added.
 
-All changes are scoped to the presentation route and its stylesheet. Production hosting must serve the Vite SPA entry for /ppt.
+Layout references: [Pitch's presentation design principles](https://pitch.com/blog/presentation-design-tips) for whitespace and emphasis, and [Linear's interface refinement](https://linear.app/now/behind-the-latest-design-refresh) for restrained separators and supporting content. Their branding and graphics are not incorporated.
+
+## Script review
+
+The four sections of the shortened script are covered in order. The Pydantic case now follows the order/shipping problem immediately (slide 4), before verification setup starts (slide 5). The introduction emphasizes silent breakage (slide 2) and uses “remaining stock in the response” consistently, without implying a verified database write. Pydantic's model/dictionary equality change is documented in its [official migration guide](https://docs.pydantic.dev/2.12/migration/).
+
+The current script describes the Pydantic case as reproduced. The deck follows that supplied account and labels the figures as a reproduction case. Editing this presentation does not independently rerun the integrated backend execution.
+
+Photos are local 1920 × 1280 development and warehouse images. Their source/license references are in `public/images/presentation/README.md`; brand glyphs reuse `public/images/ossguard/`. Photos illustrate context, not evidence. Result values are editable HTML, not screenshots.
+
+Production hosting must serve the Vite SPA entry for `/ppt`.

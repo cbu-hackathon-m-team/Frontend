@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { BackendConnection } from "@/components/ossguard/backend-workspace";
 
 export default function DashboardSettings() {
   const { workspace, error: loadError, saveWorkspace } = useWorkspace();
@@ -36,8 +37,24 @@ export default function DashboardSettings() {
     <div className="flex flex-col gap-8">
       <WorkspacePageHeader
         title="워크스페이스 설정"
-        description="워크스페이스 정보와 작업 환경을 관리하세요."
       />
+      <section
+        id="server-connection"
+        className="grid gap-6 border-t border-boundary-subtle pt-7 lg:grid-cols-3"
+        aria-labelledby="server-connection-title"
+      >
+        <div>
+          <h2 id="server-connection-title" className="type-heading-sm">
+            서버 연결
+          </h2>
+          <p className="mt-2 max-w-64 type-body-md text-interface-secondary">
+            프로젝트 조회와 검증 실행에 사용할 서버 연결을 관리합니다.
+          </p>
+        </div>
+        <div className="min-w-0 max-w-xl lg:col-span-2">
+          <BackendConnection settings />
+        </div>
+      </section>
       {(loadError || error) && (
         <Alert variant="destructive">
           <AlertDescription>{loadError || error}</AlertDescription>

@@ -71,6 +71,7 @@ export function ServerTests({
   projectId,
   suite,
   rule,
+  inputSchema = {},
   dirty,
   onChange,
   onRule,
@@ -80,6 +81,7 @@ export function ServerTests({
   projectId: string;
   suite: Suite;
   rule: string;
+  inputSchema?: Record<string, unknown>;
   dirty: boolean;
   onChange: (value: Suite) => void;
   onRule: (value: string) => void;
@@ -113,7 +115,7 @@ export function ServerTests({
     try {
       await api.request(`/api/projects/${projectId}/rules`, "PUT", {
         description: rule,
-        input_schema: {},
+        input_schema: inputSchema,
       });
       if (generate) {
         const next = await api.request<Suite>(
@@ -253,7 +255,7 @@ export function ServerTests({
                 </Button>
               </div>
             </CardHeader>
-            <CardContent className="flex min-w-0 flex-col gap-5 px-5 md:px-5">
+            <CardContent className="flex min-w-0 flex-col gap-5 px-5 pb-5 md:px-5 md:pb-5">
               <FieldGroup className="grid gap-4 sm:grid-cols-[120px_minmax(0,1fr)]">
                 <Field>
                   <FieldLabel htmlFor="case-method">HTTP 메서드</FieldLabel>
@@ -337,8 +339,8 @@ export function ServerTests({
                   key={index}
                   className="flex flex-col gap-3 rounded-md border border-boundary-default p-3"
                 >
-                  <div className="grid grid-cols-[minmax(0,1fr)_100px_auto] items-end gap-3">
-                    <Field>
+                  <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-3 sm:grid-cols-[minmax(0,1fr)_100px_auto]">
+                    <Field className="col-span-2 sm:col-span-1">
                       <FieldLabel htmlFor={`json-path-${index}`}>
                         JSON 경로
                       </FieldLabel>
@@ -447,7 +449,7 @@ export function ServerTests({
                   key={index}
                   className="flex flex-col gap-3 rounded-md border border-boundary-default p-3"
                 >
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid gap-3 sm:grid-cols-2">
                     <Field>
                       <FieldLabel htmlFor={`external-method-${index}`}>
                         HTTP 메서드

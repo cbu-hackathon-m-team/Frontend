@@ -1,0 +1,101 @@
+@reference "../../styles/globals.css";
+
+.file {
+  min-width: 0;
+  border: 1px solid var(--boundary-default);
+  border-radius: 0.5rem;
+  background: var(--surface-canvas);
+}
+.header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 3rem;
+  padding: 0.75rem 1rem;
+  border-radius: inherit;
+  background: var(--surface-panel);
+  cursor: pointer;
+  list-style: none;
+}
+.header::-webkit-details-marker { display: none; }
+.header:hover { background: var(--interaction-button-hover); }
+.header:focus-visible, .scroll:focus-visible {
+  outline: 2px solid var(--keyboard-focus);
+  outline-offset: 2px;
+}
+.file[open] > .header {
+  border-bottom: 1px solid var(--boundary-default);
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.chevron, .fileIcon {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  color: var(--interface-muted);
+}
+.file[open] .chevron { transform: rotate(90deg); }
+.path {
+  min-width: 0;
+  @apply type-code-sm;
+  overflow-wrap: anywhere;
+}
+.stats {
+  display: flex;
+  flex-shrink: 0;
+  gap: 0.5rem;
+  margin-left: auto;
+  @apply type-code-sm;
+  font-variant-numeric: tabular-nums;
+}
+.additionCount { color: var(--signal-success); }
+.deletionCount { color: var(--signal-danger); }
+.scroll {
+  max-height: 32rem;
+  overflow: auto;
+  border-bottom-left-radius: inherit;
+  border-bottom-right-radius: inherit;
+}
+.code {
+  width: 100%;
+  border-collapse: collapse;
+  @apply type-code-sm;
+  color: var(--interface-primary);
+}
+.code td { vertical-align: top; }
+.lineNumber {
+  width: 3rem;
+  min-width: 3rem;
+  padding: 0 0.5rem;
+  border-right: 1px solid var(--boundary-subtle);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--interface-muted);
+  user-select: none;
+}
+.sign {
+  width: 1.5rem;
+  min-width: 1.5rem;
+  text-align: center;
+  user-select: none;
+}
+.content {
+  padding-right: 1rem;
+  white-space: pre;
+  tab-size: 4;
+}
+.metadata {
+  padding: 0.5rem 1rem;
+  white-space: pre;
+  color: var(--interface-secondary);
+  background: var(--surface-inset);
+}
+.code [data-kind="hunk"] .metadata {
+  background: color-mix(in srgb, var(--primary) 8%, var(--surface-canvas));
+  color: var(--interface-secondary);
+}
+.code [data-kind="added"] { background: color-mix(in srgb, var(--signal-success) 10%, var(--surface-canvas)); }
+.code [data-kind="removed"] { background: color-mix(in srgb, var(--signal-danger) 10%, var(--surface-canvas)); }
+.code [data-kind="added"] .sign { color: var(--signal-success); }
+.code [data-kind="removed"] .sign { color: var(--signal-danger); }
+.empty { @apply type-body-sm; padding: 1rem; color: var(--interface-muted); }

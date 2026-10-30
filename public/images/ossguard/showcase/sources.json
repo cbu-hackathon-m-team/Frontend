@@ -1,0 +1,14 @@
+{
+  "source": "Pexels",
+  "license": "https://www.pexels.com/license/",
+  "retrieved": "2026-10-31",
+  "usage": "Licensed stock photography illustrating the card topics; these are not product screenshots or customer endorsements.",
+  "files": [
+    { "file": "shipping.jpg", "photographer": "Tima Miroshnichenko", "page": "https://www.pexels.com/photo/delivery-man-carrying-boxes-6169670/", "size": [1600, 1046] },
+    { "file": "inventory.jpg", "photographer": "Ryan Klaus", "page": "https://www.pexels.com/photo/low-angle-shot-of-boxes-standing-on-the-shelves-in-a-warehouse-27111449/", "size": [1600, 1067] },
+    { "file": "payment.jpg", "photographer": "cottonbro studio", "page": "https://www.pexels.com/photo/hand-holding-a-black-card-8657364/", "size": [1600, 2400] },
+    { "file": "data.jpg", "photographer": "Daniil Komov", "page": "https://www.pexels.com/photo/close-up-of-programming-code-on-computer-screen-34803988/", "size": [1600, 1067] },
+    { "file": "build.jpg", "photographer": "Nemuel Sereti", "page": "https://www.pexels.com/photo/programming-code-on-laptop-screen-6424590/", "size": [1600, 1067] },
+    { "file": "review.jpg", "photographer": "Pavel Danilyuk", "page": "https://www.pexels.com/photo/a-person-typing-on-a-laptop-5496459/", "size": [1600, 2400] }
+  ]
+}

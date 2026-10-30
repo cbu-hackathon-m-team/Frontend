@@ -41,7 +41,20 @@ function Controls() {
   );
 }
 
+it("starts in dark mode with blue accent when no preference is saved", async () => {
+  render(<AppearanceProvider><Controls /></AppearanceProvider>);
+  await waitFor(() => expect(document.documentElement).toHaveClass("dark"));
+  expect(document.documentElement).toHaveAttribute("data-accent", "blue");
+});
+
+it("respects a saved preference to disable the blue accent", () => {
+  localStorage.setItem("blue-accent", "false");
+  render(<AppearanceProvider><Controls /></AppearanceProvider>);
+  expect(document.documentElement).not.toHaveAttribute("data-accent");
+});
+
 it("keeps the blue preference independent of mode and restores it after remount", async () => {
+  localStorage.setItem("blue-accent", "false");
   const view = render(
     <AppearanceProvider>
       <Controls />
@@ -117,4 +130,6 @@ it("syncs the Blue accent from other tabs without changing the brightness mode",
   expect(document.documentElement).not.toHaveAttribute("data-accent");
   expect(document.documentElement).toHaveClass("dark");
   expect(storageWrites).not.toHaveBeenCalledWith("blue-accent", expect.anything());
+  fireEvent(window, new StorageEvent("storage", { key: "blue-accent", newValue: null }));
+  expect(document.documentElement).toHaveAttribute("data-accent", "blue");
 });

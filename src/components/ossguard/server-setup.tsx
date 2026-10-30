@@ -88,7 +88,7 @@ export function ServerSetup({
       setBusy(false);
     }
   }
-  async function save() {
+  async function save(next = false) {
     setBusy(true);
     setError("");
     try {
@@ -112,6 +112,7 @@ export function ServerSetup({
       );
       await onReload();
       toast.success("실행 설정을 저장했습니다.");
+      if (next) onNext();
     } catch (e) {
       setError(errorText(e));
     } finally {
@@ -132,7 +133,7 @@ export function ServerSetup({
         <CardHeader className="px-5 py-4 md:px-5">
           <CardTitle>GitHub 소스</CardTitle>
         </CardHeader>
-        <CardContent className="flex min-w-0 flex-col gap-4 px-5 md:px-5 md:pb-5">
+        <CardContent className="flex min-w-0 flex-col gap-4 px-5 pb-5 md:px-5 md:pb-5">
           <p className="break-all type-code-sm">{project.repository_url}</p>
           <div className="flex flex-wrap items-center gap-3 type-body-sm">
             <GitBranch className="size-4" />
@@ -168,7 +169,7 @@ export function ServerSetup({
             <CardHeader className="px-5 py-4 md:px-5">
               <CardTitle>의존성 업데이트</CardTitle>
             </CardHeader>
-            <CardContent className="px-5 md:px-5 md:pb-5">
+            <CardContent className="px-5 pb-5 md:px-5 md:pb-5">
               <FieldGroup className="grid gap-4 sm:grid-cols-2">
                 <Field>
                   <FieldLabel htmlFor="dependency-name">직접 의존성</FieldLabel>
@@ -226,12 +227,13 @@ export function ServerSetup({
             <CardHeader className="px-5 py-4 md:px-5">
               <CardTitle>실행 환경</CardTitle>
             </CardHeader>
-            <CardContent className="px-5 md:px-5 md:pb-5">
+            <CardContent className="px-5 pb-5 md:px-5 md:pb-5">
               <form
                 className="flex flex-col gap-5"
                 onSubmit={(e) => {
                   e.preventDefault();
-                  void save();
+                  const submitter = (e.nativeEvent as SubmitEvent).submitter;
+                  void save(submitter instanceof HTMLButtonElement && submitter.value === "next");
                 }}
               >
                 <FieldGroup className="grid gap-4 sm:grid-cols-2">
@@ -322,7 +324,7 @@ export function ServerSetup({
                   <Button variant="outline" disabled={busy}>
                     {busy ? "저장 중…" : "실행 설정 저장"}
                   </Button>
-                  <Button type="button" onClick={onNext} disabled={busy}>
+                  <Button type="submit" value="next" disabled={busy}>
                     업무 테스트 검토
                   </Button>
                 </div>

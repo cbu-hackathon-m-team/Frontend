@@ -14,16 +14,16 @@ const workspaces = [
 export { navItemClasses } from "@/components/ui/sidebar";
 
 export const dashboardBrandTriggerClasses =
-  "flex h-10 w-full justify-start items-center gap-2.5 px-2.5 py-0 rounded-md hover:bg-interaction-hover-control transition-all overflow-hidden group/header data-[state=open]:bg-interaction-selected data-[state=open]:hover:bg-interaction-selected dark:data-[state=open]:hover:bg-interaction-selected";
+  "flex h-10 w-full justify-start items-center gap-2.5 px-2.5 py-0 rounded-md hover:bg-interaction-hover-control transition-colors overflow-hidden group/header data-[state=open]:bg-interaction-selected data-[state=open]:hover:bg-interaction-selected dark:data-[state=open]:hover:bg-interaction-selected";
 
 export const dashboardAccountTriggerClasses =
-  "w-full justify-between px-2.5 py-1.5 h-10 text-interface-secondary hover:bg-interaction-hover-control hover:text-interface-contrast transition-all duration-(--motion-responsive) overflow-hidden group/footer data-[state=open]:bg-interaction-selected data-[state=open]:text-interface-contrast data-[state=open]:hover:bg-interaction-selected dark:data-[state=open]:hover:bg-interaction-selected";
+  "w-full justify-between px-2.5 py-1.5 h-10 text-interface-secondary hover:bg-interaction-hover-control hover:text-interface-contrast transition-colors duration-(--motion-responsive) overflow-hidden group/footer data-[state=open]:bg-interaction-selected data-[state=open]:text-interface-contrast data-[state=open]:hover:bg-interaction-selected dark:data-[state=open]:hover:bg-interaction-selected";
 
 
 export function DashboardBrandIdentity({ name = "Hapalin Studio" }: { name?: string }) {
   return (
     <>
-      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-foreground transition-all duration-(--motion-responsive) group-hover/header:scale-105">
+      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-foreground transition-transform duration-(--motion-responsive) group-hover/header:scale-105 motion-reduce:transform-none motion-reduce:transition-none">
         <Layers2 className="h-3.5 w-3.5 text-background" />
       </div>
       <div className="flex flex-1 items-center justify-between overflow-hidden">
@@ -89,7 +89,7 @@ export function WorkspaceMenu({
                   key={workspace.id}
                   to={workspace.path}
                   className={cn(
-                    "flex items-center gap-2 rounded-md px-2.5 py-1.5 type-body-md transition-all duration-(--motion-responsive) outline-none focus-control",
+                    "flex items-center gap-2 rounded-md px-2.5 py-1.5 type-body-md transition-colors duration-(--motion-responsive) outline-none focus-control",
                     isSubActive
                       ? "type-label-md text-interface-contrast"
                       : "text-interface-secondary hover:bg-contrast/8 hover:text-interface-supporting",

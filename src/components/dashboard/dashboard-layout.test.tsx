@@ -27,6 +27,7 @@ import { PROJECTS_STORAGE_KEY } from "./projects";
 
 beforeEach(() => {
   localStorage.clear();
+  sessionStorage.clear();
   vi.stubGlobal(
     "ResizeObserver",
     class {
@@ -50,8 +51,33 @@ afterEach(() => {
   cleanup();
   vi.useRealTimers();
   localStorage.clear();
+  sessionStorage.clear();
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
+});
+
+it("moves server connection to settings and returns to projects with the connection intact", async () => {
+  const user = userEvent.setup();
+  const storedDrafts = JSON.stringify([{ id: "old-draft", name: "Old draft" }]);
+  localStorage.setItem(PROJECTS_STORAGE_KEY, storedDrafts);
+  vi.stubGlobal("fetch", vi.fn(async () => new Response("[]", {
+    status: 200,
+    headers: { "Content-Type": "application/json" },
+  })));
+  render(<WorkspaceApp path="/dashboard" />);
+  expect(screen.queryByLabelText("서버 접근 키")).not.toBeInTheDocument();
+  expect(screen.queryByText("기존 브라우저 초안")).not.toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "새 프로젝트" })).toBeDisabled();
+  await user.click(screen.getByRole("link", { name: "서버 연결 설정" }));
+  expect(screen.getByRole("heading", { name: "워크스페이스 설정" })).toBeInTheDocument();
+  await user.type(screen.getByLabelText("서버 접근 키"), "test-token");
+  await user.click(screen.getByRole("button", { name: "서버 연결" }));
+  expect(await screen.findByText("서버 연결됨")).toBeInTheDocument();
+  await user.click(screen.getByRole("link", { name: "돌아가기" }));
+  expect(await screen.findByRole("button", { name: "새 프로젝트" })).toBeEnabled();
+  expect(screen.queryByRole("link", { name: "서버 연결 설정" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "연결 해제" })).not.toBeInTheDocument();
+  expect(localStorage.getItem(PROJECTS_STORAGE_KEY)).toBe(storedDrafts);
 });
 
 it("opens the collapsed rail across the edge-to-panel gap and closes after leaving", async () => {

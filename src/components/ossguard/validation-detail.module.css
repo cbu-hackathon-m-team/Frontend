@@ -1,0 +1,39 @@
+@reference "../../styles/globals.css";
+
+.logHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--boundary-default);
+  background: var(--surface-section);
+}
+
+.logTitle {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.75rem;
+  @apply type-label-md;
+}
+
+.logBody {
+  min-height: 12rem;
+  max-height: 32rem;
+  margin: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 1.25rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  tab-size: 4;
+  color: var(--interface-primary);
+  background: var(--surface-inset);
+  @apply type-code-sm;
+}
+
+.logBody:focus-visible {
+  outline: 2px solid var(--keyboard-focus);
+  outline-offset: -2px;
+}

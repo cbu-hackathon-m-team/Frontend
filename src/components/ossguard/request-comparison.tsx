@@ -45,7 +45,7 @@ export function RequestComparison({
   );
   const chosen = steps.find((s) => s.key === selected) ?? steps[0];
   const first = steps.find((s) => s.key === diffs[0]?.key);
-  const width = Math.max(600, steps.length * 184 + 88);
+  const width = Math.max(600, steps.length * 216 + 88);
   const getState = (
     observation: Observation | undefined,
     key: string,
@@ -156,7 +156,7 @@ export function RequestComparison({
           호출을 선택하면 같은 지점의 A/B 증거가 함께 바뀝니다.
         </p>
         <div
-          className={cn(styles.wide, "overflow-x-auto pb-2")}
+          className={cn(styles.wide, "overflow-x-auto px-1 pt-1 pb-2")}
           tabIndex={0}
           aria-label="A/B 호출 경로 비교"
         >
@@ -181,8 +181,8 @@ export function RequestComparison({
                       ),
                       to = steps.findIndex((s) => s.key === event.stepKey);
                     const y = lane * 96 + 32,
-                      start = 88 + from * 184 + 144,
-                      end = 88 + to * 184;
+                      start = 88 + from * 216 + 176,
+                      end = 88 + to * 216;
                     const uncertain = steps
                       .slice(Math.min(from, to) + 1, Math.max(from, to))
                       .some((s) => getState(observation, s.key) === "unknown");
@@ -249,7 +249,7 @@ export function RequestComparison({
                     <div
                       key={step.key}
                       className={cn(
-                        "absolute left-[var(--node-left)] top-[var(--lane-top)] h-16 w-36 rounded-lg border",
+                        "absolute left-[var(--node-left)] top-[var(--lane-top)] h-16 w-44 rounded-lg border",
                         changed
                           ? "border-signal-danger/50 bg-signal-danger/5"
                           : "border-boundary-default bg-surface-canvas",
@@ -259,7 +259,7 @@ export function RequestComparison({
                       )}
                       style={
                         {
-                          "--node-left": `${88 + index * 184}px`,
+                          "--node-left": `${88 + index * 216}px`,
                           "--lane-top": `${lane * 96}px`,
                         } as CSSProperties
                       }
@@ -282,9 +282,14 @@ export function RequestComparison({
                                     : "text-interface-muted",
                               )}
                             />
-                            <span className="truncate">{step.label}</span>
+                            <span className="truncate" title={step.label}>
+                              {step.label}
+                            </span>
                           </span>
-                          <span className="max-w-full truncate type-code-sm text-interface-muted">
+                          <span
+                            className="max-w-full truncate type-code-sm text-interface-muted"
+                            title={event?.operation ?? stateLabel[state]}
+                          >
                             {event?.data.status !== undefined
                               ? `HTTP ${event.data.status}`
                               : event
@@ -307,7 +312,7 @@ export function RequestComparison({
           >
             <Separator />
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <h3 className="type-heading-sm">{chosen.label}</h3>
+              <h3 className="min-w-0 break-all type-heading-sm">{chosen.label}</h3>
               <span className="type-body-sm text-interface-secondary">
                 {diffs.find((d) => d.key === chosen.key)?.reason ??
                   "선택한 관측 기록"}

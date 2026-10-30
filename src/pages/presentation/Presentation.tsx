@@ -191,7 +191,7 @@ export default function Presentation() {
 
   useEffect(() => {
     const previous = document.title;
-    document.title = `${index + 1}. ${slides[index].title} | Hapalin`;
+    document.title = `${index + 1}. ${slides[index].title.replace(/\n/g, " ")} | OSSGuard`;
     return () => { document.title = previous; };
   }, [index]);
   useEffect(() => {
@@ -229,10 +229,10 @@ export default function Presentation() {
     }
   }
 
-  return <main ref={stageRef} className={styles["ppt"]} data-enter-direction={fallbackEntry?.target === index ? fallbackEntry.direction : undefined} aria-label="Hapalin 프로젝트 발표">
+  return <main ref={stageRef} className={styles["ppt"]} data-enter-direction={fallbackEntry?.target === index ? fallbackEntry.direction : undefined} aria-label="OSSGuard 서비스 발표">
     <div className={styles["ppt-viewport"]}>
       {slides.map((slide, i) => <section key={slide.id} className={styles["ppt-slide"]} hidden={i !== index} aria-hidden={i !== index} aria-label={`${i + 1}. ${slide.title}`} data-slide={i + 1} data-kind={slide.id}>
-        {["intro", "views", "workspace", "continue", "closing"].includes(slide.id) && <div className={styles["ppt-atmosphere"]} aria-hidden="true"><span /><span /><span /><PresentationArtwork kind={slide.id === "intro" || slide.id === "workspace" ? "layers" : slide.id === "closing" ? "horizon" : "flow"} /></div>}
+        {["intro", "isolation", "closing"].includes(slide.id) && <div className={styles["ppt-atmosphere"]} aria-hidden="true"><span /><span /><span /><PresentationArtwork kind={slide.id === "intro" ? "layers" : slide.id === "closing" ? "horizon" : "flow"} /></div>}
         <div className={styles["ppt-content"]}><div className={styles["ppt-body"]}><SlideContent id={slide.id} /></div></div>
       </section>)}
     </div>

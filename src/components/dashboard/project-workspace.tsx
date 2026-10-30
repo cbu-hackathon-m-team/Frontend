@@ -300,7 +300,6 @@ export function ProjectWorkspace({
     <div className="flex flex-col gap-7">
       <WorkspacePageHeader
         title="프로젝트"
-        description="GitHub 의존성 업데이트의 빌드·업무 결과를 검증합니다."
         actions={
           <Button
             ref={createRef}

@@ -1,6 +1,6 @@
 import userEvent from "@testing-library/user-event";
 import { afterEach, expect, it } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 import { pythonDemo } from "./python-demo";
 import { RequestComparison } from "./request-comparison";
 import { ValidationDetail } from "./validation-detail";
@@ -8,6 +8,30 @@ import { repositoryReady } from "./repository-setup";
 import { compareRecordedSample } from "./comparison";
 
 afterEach(cleanup);
+it("shows completed stages in order and opens the selected stage log", async () => {
+  const user = userEvent.setup();
+  const result = {
+    ...pythonDemo.samples[0],
+    execution: {
+      ...pythonDemo.samples[0].execution!,
+      stages: [
+        { id: "source", label: "소스 준비", state: "done" as const, detail: "Source log" },
+        { id: "build", label: "후보 B 빌드", state: "done" as const, detail: "Build log" },
+      ],
+    },
+  };
+  render(<ValidationDetail project={pythonDemo} result={result} run={1} />);
+  const pipeline = screen.getByRole("list", { name: "검증 실행 파이프라인" });
+  const stages = within(pipeline).getAllByRole("button");
+  expect(stages[0]).toHaveAccessibleName("1단계 · 소스 준비 · 완료");
+  expect(stages[1]).toHaveAccessibleName("2단계 · 후보 B 빌드 · 완료");
+  await user.click(screen.getByRole("tab", { name: "실행·로그" }));
+  expect(screen.getByText("Source log")).toBeInTheDocument();
+  await user.click(stages[1]);
+  expect(screen.getByText("Build log")).toBeInTheDocument();
+  expect(stages[1]).toHaveAttribute("aria-pressed", "true");
+});
+
 it("shows only HTTP and external calls and connects candidate directly to the response", () => {
   const { container } = render(
     <RequestComparison

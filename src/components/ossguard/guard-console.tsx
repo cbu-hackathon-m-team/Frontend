@@ -149,18 +149,6 @@ export function GuardConsole({
     }, 600);
     return () => window.clearTimeout(timer);
   }, [progress, pending]);
-  const description = {
-    overview: "의존성 변경부터 업무 검증까지, 이 프로젝트의 상태를 확인합니다.",
-    runs: "같은 소스와 테스트로 수행한 검증을 열고, A/B 차이를 확인합니다.",
-    setup: p.repository
-      ? "소스를 고정하고 변경할 의존성·목표 버전과 실행 규격을 정합니다."
-      : "어떤 버전과 설정을 실행하고, 회사 API를 어떻게 재현할지 정합니다.",
-    tests:
-      "보낼 입력과 정상 결과를 정의합니다. 테스트와 조건은 필요한 만큼 추가하세요.",
-    results: sample
-      ? "처음 달라진 단계부터 실제 호출과 결과값을 비교하세요."
-      : "확정한 입력·기대 동작과 A/B 실행 상태를 확인합니다.",
-  }[tab];
   return (
     <section
       className="flex min-w-0 flex-col gap-5 break-keep"
@@ -193,11 +181,6 @@ export function GuardConsole({
                   : "실행기 미연결"}
             </Badge>
           </div>
-          {tab !== "results" && (
-            <p className="type-body-md text-interface-secondary">
-              {description}
-            </p>
-          )}
         </div>
         <div className="flex flex-wrap gap-2">
           {(tab === "overview" || tab === "runs") && (

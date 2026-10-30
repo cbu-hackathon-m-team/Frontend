@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { ArrowRight, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -74,14 +74,6 @@ export function LoginForm() {
           </Button>
         </FieldGroup>
       </form>
-      <div className="login-explore">
-        <span className="type-body-md text-interface-secondary">
-          먼저 둘러보시겠어요?
-        </span>
-        <Link to="/design-system" className="site-text-link">
-          디자인 시스템 <ArrowRight aria-hidden="true" />
-        </Link>
-      </div>
     </div>
   );
 }

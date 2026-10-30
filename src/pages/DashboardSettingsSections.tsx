@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 
 export function SettingsMembers() {
   return <div className="flex flex-col gap-8">
-    <WorkspacePageHeader title="멤버" description="워크스페이스에 접근할 수 있는 사람과 권한을 관리합니다."
+    <WorkspacePageHeader title="멤버"
       actions={<Button disabled title="멤버 초대는 준비 중입니다."><UserPlus data-icon="inline-start" />멤버 초대</Button>} />
     <Table>
       <TableHeader><TableRow><TableHead>멤버</TableHead><TableHead>이메일</TableHead><TableHead>역할</TableHead></TableRow></TableHeader>
@@ -22,7 +22,7 @@ export function SettingsMembers() {
 
 export function SettingsPlans() {
   return <div className="flex flex-col gap-8">
-    <WorkspacePageHeader title="요금제" description="워크스페이스의 요금제와 결제 정보를 관리합니다." />
+    <WorkspacePageHeader title="요금제" />
     <section className="grid gap-6 border-t border-boundary-subtle pt-7 sm:grid-cols-3" aria-labelledby="settings-plan">
       <div><h2 id="settings-plan" className="type-heading-sm">현재 요금제</h2><p className="mt-2 type-body-md text-interface-secondary">워크스페이스에 적용되는 구독입니다.</p></div>
       <div className="flex flex-col items-start gap-4 sm:col-span-2">
@@ -43,7 +43,7 @@ export function SettingsPlans() {
 
 export function SettingsInvoices() {
   return <div className="flex flex-col gap-8">
-    <WorkspacePageHeader title="청구서" description="워크스페이스의 결제 내역과 청구서를 확인합니다." />
+    <WorkspacePageHeader title="청구서" />
     <Table>
       <TableHeader><TableRow><TableHead>발행일</TableHead><TableHead>내역</TableHead><TableHead>금액</TableHead><TableHead>상태</TableHead></TableRow></TableHeader>
       <TableBody><TableRow><TableCell colSpan={4}>
@@ -56,7 +56,7 @@ export function SettingsInvoices() {
 export function SettingsAppearance() {
   const { theme, setTheme } = useTheme();
   return <div className="flex flex-col gap-8">
-    <WorkspacePageHeader title="화면 설정" description="편하게 작업할 수 있도록 화면 모드를 선택하세요." />
+    <WorkspacePageHeader title="화면 설정" />
     <section className="grid gap-6 border-t border-boundary-subtle pt-7 sm:grid-cols-3" aria-labelledby="workspace-appearance">
       <div><h2 id="workspace-appearance" className="type-heading-sm">화면 모드</h2><p className="mt-2 type-body-md text-interface-secondary">모든 페이지에 같은 테마가 적용됩니다.</p></div>
       <div className="flex items-center justify-between gap-4 sm:col-span-2">

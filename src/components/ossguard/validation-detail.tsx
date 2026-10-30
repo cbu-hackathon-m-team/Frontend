@@ -1,30 +1,21 @@
 import { useState } from "react";
-import {
-  CheckCircle2,
-  CircleDashed,
-  XCircle,
-  LoaderCircle,
-} from "lucide-react";
+import { Terminal } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import {
-  Accordion,
-  AccordionItem,
-  AccordionTrigger,
-  AccordionContent,
-} from "@/components/ui/accordion";
 import {
   Empty,
   EmptyHeader,
   EmptyTitle,
   EmptyDescription,
 } from "@/components/ui/empty";
-import { cn } from "@/lib/utils";
 import { GuardResults } from "./guard-results";
 import { RunSummary } from "./run-summary";
+import { ExecutionPipeline } from "./execution-pipeline";
+import { FileDiff } from "./file-diff";
 import { outcomeLabel, type ValidationProject, type SampleRun } from "./model";
+import styles from "./validation-detail.module.css";
 
 function DetailContent({
   project,
@@ -35,14 +26,13 @@ function DetailContent({
   result: SampleRun;
   run: number;
 }) {
-  const [stageId, setStageId] = useState(
-    result.execution?.stages.find((s) => s.state === "failed")?.id,
-  );
+  const initialStage = result.execution?.stages.find((s) => s.state === "failed")
+    ?? result.execution?.stages.find((s) => s.state === "running")
+    ?? result.execution?.stages[0];
+  const [stageId, setStageId] = useState(initialStage?.id);
   const stage =
     result.execution?.stages.find((s) => s.id === stageId) ??
-    result.execution?.stages.find(
-      (s) => s.state === "running" || s.state === "failed",
-    );
+    initialStage;
   const [tab, setTab] = useState(
     result.execution?.stages.some((s) => s.state === "failed") &&
       result.cases.every((c) => c.outcome === "unverified")
@@ -51,10 +41,9 @@ function DetailContent({
   );
   return (
     <div className="flex min-w-0 flex-col gap-5">
-      <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
+      <div className="grid items-center gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
         <div className="flex min-w-0 flex-col gap-3">
           <div className="flex min-w-0 flex-wrap items-center gap-3">
-            <h2 className="type-heading-md break-keep">{result.title}</h2>
             {(result.awaitingResults ||
               result.title !== outcomeLabel[result.outcome]) && (
               <Badge
@@ -83,7 +72,8 @@ function DetailContent({
                   : `${result.execution?.kind === "example" ? "EXAMPLE" : "RUN"}-${String(run).padStart(3, "0")}`}
             </span>
           </div>
-          <div className="flex min-w-0 flex-wrap items-center gap-x-6 gap-y-2 type-body-sm text-interface-secondary">
+          <h2 className="break-keep type-heading-md">{result.title}</h2>
+          <div className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2 type-body-sm text-interface-secondary">
             <span className="min-w-0 break-all">
               {project.repository?.sha
                 ? project.repository.sha.slice(0, 12)
@@ -112,53 +102,15 @@ function DetailContent({
       </div>
       {result.execution && (
         <Card variant="panel">
-          <CardContent className="p-2 md:p-2">
-            <ol
-              className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-6"
-              aria-label="검증 실행 파이프라인"
-            >
-              {result.execution.stages.map((s) => {
-                const Icon =
-                  s.state === "done"
-                    ? CheckCircle2
-                    : s.state === "failed"
-                      ? XCircle
-                      : s.state === "running"
-                        ? LoaderCircle
-                        : CircleDashed;
-                return (
-                  <li key={s.id} className="min-w-0">
-                    <Button
-                      aria-label={s.label}
-                      aria-current={s.state === "running" ? "step" : undefined}
-                      variant={stageId === s.id ? "secondary" : "ghost"}
-                      className="h-auto w-full justify-start"
-                      onClick={() => {
-                        setStageId(s.id);
-                        setTab("execution");
-                      }}
-                    >
-                      <span className="flex min-w-0 items-center gap-2">
-                        <Icon
-                          className={cn(
-                            s.state === "done"
-                              ? "text-signal-success"
-                              : s.state === "failed"
-                                ? "text-signal-danger"
-                                : s.state === "running"
-                                  ? "text-interface-contrast animate-spin motion-reduce:animate-none"
-                                  : "text-interface-muted",
-                          )}
-                        />
-                        <span className="whitespace-normal text-left">
-                          {s.label.replace("빌드·테스트", "검증")}
-                        </span>
-                      </span>
-                    </Button>
-                  </li>
-                );
-              })}
-            </ol>
+          <CardContent className="p-3 md:p-3">
+            <ExecutionPipeline
+              stages={result.execution.stages}
+              selected={stageId}
+              onSelect={(id) => {
+                setStageId(id);
+                setTab("execution");
+              }}
+            />
           </CardContent>
         </Card>
       )}
@@ -203,7 +155,7 @@ function DetailContent({
             />
           )}
         </TabsContent>
-        <TabsContent value="changes" className="min-w-0">
+        <TabsContent value="changes" className="mt-3 min-w-0">
           <div className="flex min-w-0 flex-col gap-5">
             <div className="grid gap-4 sm:grid-cols-2">
               {[
@@ -211,13 +163,13 @@ function DetailContent({
                 ["B · 실제 설치 버전", result.execution?.installedB],
               ].map(([label, value]) => (
                 <Card variant="panel" key={label}>
-                  <CardHeader>
+                  <CardHeader className="px-5 py-4 md:px-5">
                     <CardTitle>
                       {label}
                       {result.execution?.kind === "example" ? " 예시" : ""}
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="px-5 pb-5 md:px-5 md:pb-5">
                     <p className="type-code-sm">{value ?? "수집되지 않음"}</p>
                   </CardContent>
                 </Card>
@@ -225,23 +177,23 @@ function DetailContent({
             </div>
             {!!result.execution?.packages.length && (
               <Card variant="panel">
-                <CardHeader>
+                <CardHeader className="px-5 py-4 md:px-5">
                   <CardTitle>전체 패키지 변경</CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="px-5 pb-5 md:px-5 md:pb-5">
                   <ul className="flex flex-col gap-4">
                     {result.execution.packages.map((p) => (
                       <li
                         key={p.name}
                         className="flex flex-wrap items-center justify-between gap-3"
                       >
-                        <span className="flex items-center gap-2 type-code-sm">
-                          {p.name}
+                        <span className="flex min-w-0 items-center gap-2 type-code-sm">
+                          <span className="min-w-0 break-all">{p.name}</span>
                           <Badge variant="outline">
                             {p.direct ? "직접" : "하위"}
                           </Badge>
                         </span>
-                        <span className="type-code-sm">
+                        <span className="break-all type-code-sm">
                           {p.before} → {p.after}
                         </span>
                       </li>
@@ -250,74 +202,47 @@ function DetailContent({
                 </CardContent>
               </Card>
             )}
-            <Card variant="panel">
-              <CardHeader>
-                <CardTitle>변경 파일</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Accordion
-                  type="multiple"
-                  defaultValue={result.execution?.files
-                    .slice(0, 1)
-                    .map((f) => f.path)}
-                >
-                  {(result.execution?.files ?? []).map((file) => (
-                    <AccordionItem key={file.path} value={file.path}>
-                      <AccordionTrigger>{file.path}</AccordionTrigger>
-                      <AccordionContent>
-                        <pre className="overflow-x-auto whitespace-pre-wrap break-words rounded-md bg-surface-canvas p-4 type-code-sm">
-                          {file.diff.split("\n").map((line, i) => (
-                            <span
-                              key={i}
-                              className={cn(
-                                "block",
-                                line.startsWith("+")
-                                  ? "text-signal-success"
-                                  : line.startsWith("-")
-                                    ? "text-signal-danger"
-                                    : "text-interface-secondary",
-                              )}
-                            >
-                              {line}
-                            </span>
-                          ))}
-                        </pre>
-                      </AccordionContent>
-                    </AccordionItem>
-                  ))}
-                </Accordion>
-                {!result.execution?.files.length && (
-                  <p className="type-body-sm text-interface-muted">
-                    수집된 파일 diff가 없습니다.
-                  </p>
-                )}
-              </CardContent>
-            </Card>
+            <section className="flex min-w-0 flex-col gap-3" aria-label="변경 파일">
+              <h3 className="type-heading-sm">변경 파일</h3>
+              {(result.execution?.files ?? []).map((file, index) => (
+                <FileDiff
+                  key={file.path}
+                  path={file.path}
+                  diff={file.diff}
+                  defaultOpen={index === 0}
+                />
+              ))}
+              {!result.execution?.files.length && (
+                <p className="type-body-sm text-interface-muted">
+                  수집된 파일 diff가 없습니다.
+                </p>
+              )}
+            </section>
           </div>
         </TabsContent>
-        <TabsContent value="execution" className="min-w-0">
+        <TabsContent value="execution" className="mt-3 min-w-0">
           <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_260px]">
-            <Card variant="panel">
-              <CardHeader>
-                <CardTitle>{stage?.label ?? "실행 기록"}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <pre className="overflow-x-auto whitespace-pre-wrap break-words rounded-lg bg-surface-canvas p-4 type-code-sm">
-                  {stage?.detail ?? result.summary}
-                </pre>
-                {result.execution?.kind === "example" && (
-                  <p className="mt-3 type-body-xs text-interface-muted">
-                    단계와 증거 배치를 확인하는 예시입니다. 실제 빌드 로그는
-                    아직 없습니다.
-                  </p>
+            <Card variant="panel" className="overflow-hidden">
+              <div className={styles.logHeader}>
+                <h3 id="execution-log-title" className={styles.logTitle}>
+                  <Terminal aria-hidden="true" className="size-4 shrink-0 text-interface-muted" />
+                  <span className="min-w-0 break-words">{stage?.label ?? "실행 기록"}</span>
+                </h3>
+                {stage && (
+                  <Badge variant={stage.state === "done" ? "success" : stage.state === "failed" ? "error" : "muted"}>
+                    {{ done: "완료", failed: "실패", running: "실행 중", pending: "대기" }[stage.state]}
+                  </Badge>
                 )}
-              </CardContent>
+              </div>
+              <pre className={styles.logBody} tabIndex={0} role="region" aria-labelledby="execution-log-title">
+                {stage?.detail.trim() || result.summary.trim() || "수집된 실행 로그가 없습니다."}
+              </pre>
             </Card>
             <Card variant="panel">
-              <CardHeader>
+              <CardHeader className="px-5 py-4 md:px-5">
                 <CardTitle>후속 처리</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="px-5 pb-5 md:px-5 md:pb-5">
                 <dl className="flex flex-col gap-4 type-body-sm">
                   {[
                     ["자원 정리", result.execution?.cleanup],

@@ -38,8 +38,9 @@ it.each([
   { name: "landing", Page: Landing },
   { name: "login", Page: Login },
 ])(
-  "preserves mode switching on $name while Blue can only be changed in the design system",
+  "inherits appearance on $name while Blue can only be changed in the design system",
   async ({ Page, name }) => {
+    localStorage.setItem("blue-accent", "false");
     const user = userEvent.setup();
     const view = render(
       <MemoryRouter>
@@ -69,7 +70,10 @@ it.each([
       ).not.toBeInTheDocument();
       await user.click(screen.getByRole("menuitemradio", { name: "다크" }));
     } else {
-      await user.click(screen.getByRole("radio", { name: "다크 모드" }));
+      expect(screen.queryByRole("group", { name: "화면 모드" })).not.toBeInTheDocument();
+      expect(document.documentElement).toHaveClass("light");
+      expect(document.documentElement).toHaveAttribute("data-accent", "blue");
+      return;
     }
     await waitFor(() => expect(document.documentElement).toHaveClass("dark"));
     expect(document.documentElement).toHaveAttribute("data-accent", "blue");

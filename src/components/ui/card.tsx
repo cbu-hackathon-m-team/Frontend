@@ -13,7 +13,7 @@ function Card({ className, variant = 'default', ...props }: React.ComponentProps
       data-slot="card"
       data-variant={variant}
       className={cn(
-        'rounded-lg border border-boundary-default bg-surface-panel',
+        'min-w-0 rounded-lg border border-boundary-default bg-surface-panel',
         variant === 'default' && 'rounded-xl text-interface-contrast shadow-panel dark:shadow-control overflow-hidden transition-all duration-[var(--motion-responsive)]',
         className,
       )}
@@ -27,7 +27,7 @@ function CardHeader({ className, variant = "default", ...props }: React.Componen
     <div
       data-slot="card-header"
       className={cn(
-        'flex flex-col space-y-2 px-6 py-6 md:px-8',
+        'flex min-w-0 flex-col space-y-2 px-6 py-6 md:px-8',
         variant === 'divided' && 'border-b border-boundary-subtle',
         className,
       )}
@@ -40,7 +40,7 @@ function CardTitle({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="card-title"
-      className={cn('type-label-lg text-interface-contrast', className)}
+      className={cn('min-w-0 break-words type-label-lg text-interface-contrast', className)}
       {...props}
     />
   )
@@ -73,7 +73,7 @@ function CardContent({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="card-content"
-      className={cn('px-6 md:px-8 pb-6 md:pb-8 pt-0', className)}
+      className={cn('min-w-0 px-6 md:px-8 pb-6 md:pb-8 pt-0', className)}
       {...props}
     />
   )

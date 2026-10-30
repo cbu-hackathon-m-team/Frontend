@@ -2,11 +2,9 @@ import type { ReactNode } from "react";
 
 export function WorkspacePageHeader({
   title,
-  description,
   actions,
 }: {
   title: string;
-  description: string;
   actions?: ReactNode;
 }) {
   return (
@@ -18,9 +16,6 @@ export function WorkspacePageHeader({
         >
           {title}
         </h1>
-        <p className="mt-2 type-body-md text-interface-secondary">
-          {description}
-        </p>
       </div>
       {actions && (
         <div className="flex shrink-0 items-center gap-2">{actions}</div>

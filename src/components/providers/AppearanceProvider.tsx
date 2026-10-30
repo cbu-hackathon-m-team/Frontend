@@ -23,9 +23,9 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
         localStorage.setItem("theme", "dark");
         localStorage.setItem("blue-accent", "true");
       }
-      return localStorage.getItem("blue-accent") === "true";
+      return localStorage.getItem("blue-accent") !== "false";
     } catch {
-      return false;
+      return true;
     }
   });
   const setBlueAccent = useCallback((enabled: boolean) => {
@@ -45,7 +45,7 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const syncAccent = (event: StorageEvent) => {
       if (event.key === "blue-accent" || event.key === null)
-        transitionAppearance(() => setBlueAccentState(event.newValue === "true"));
+        transitionAppearance(() => setBlueAccentState(event.newValue !== "false"));
     };
     window.addEventListener("storage", syncAccent);
     return () => window.removeEventListener("storage", syncAccent);

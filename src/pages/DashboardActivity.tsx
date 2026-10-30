@@ -33,7 +33,6 @@ export default function DashboardActivity() {
     <div className="flex flex-col gap-8">
       <WorkspacePageHeader
         title="최근 변경"
-        description="프로젝트별 마지막 변경과 수정 시점을 확인하세요."
       />
       {snapshot.error ? (
         <Alert variant="destructive">

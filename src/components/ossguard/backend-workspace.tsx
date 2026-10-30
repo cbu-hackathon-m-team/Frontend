@@ -10,7 +10,6 @@ import {
   FieldLabel,
   FieldDescription,
 } from "@/components/ui/field";
-import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
@@ -22,12 +21,11 @@ import {
 import { useBackend } from "./backend-context";
 import { errorText, type ApiProject } from "./api";
 import { projectHref } from "./model";
-import { readProjects } from "@/components/dashboard/projects";
 import { selectedProject } from "./demo-project";
 import { readDraft } from "./draft";
 import { purchaseDemo } from "./execution-defaults";
 
-export function BackendConnection() {
+export function BackendConnection({ settings = false }: { settings?: boolean }) {
   const { api, loading, error, connect, disconnect, refresh } = useBackend();
   const [token, setToken] = useState("");
   return (
@@ -35,22 +33,24 @@ export function BackendConnection() {
       {api ? (
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Badge variant="success">서버 연결됨</Badge>
-          <div className="flex gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              disabled={loading}
-              onClick={() => void refresh()}
-            >
-              <RefreshCw data-icon="inline-start" />
-              새로고침
-            </Button>
-            <Button variant="ghost" size="sm" onClick={disconnect}>
-              연결 해제
-            </Button>
-          </div>
+          {settings && (
+            <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={loading}
+                onClick={() => void refresh()}
+              >
+                <RefreshCw data-icon="inline-start" />
+                새로고침
+              </Button>
+              <Button variant="ghost" size="sm" onClick={disconnect}>
+                연결 해제
+              </Button>
+            </div>
+          )}
         </div>
-      ) : (
+      ) : settings ? (
         <Card variant="panel">
           <CardHeader className="px-5 py-4 md:px-5">
             <CardTitle>검증 서버에 연결</CardTitle>
@@ -64,7 +64,7 @@ export function BackendConnection() {
             >
               <FieldGroup>
                 <Field>
-                  <FieldLabel htmlFor="team-token">팀 토큰</FieldLabel>
+                  <FieldLabel htmlFor="team-token">서버 접근 키</FieldLabel>
                   <div className="flex flex-col gap-3 sm:flex-row">
                     <Input
                       className="min-w-0 flex-1"
@@ -84,13 +84,29 @@ export function BackendConnection() {
                     </Button>
                   </div>
                   <FieldDescription>
-                    현재 탭에서만 연결을 유지합니다.
+                    서버 관리자에게 받은 접근 키를 입력하세요. 현재 탭에서만
+                    연결을 유지합니다.
                   </FieldDescription>
                 </Field>
               </FieldGroup>
             </form>
           </CardContent>
         </Card>
+      ) : (
+        <Empty>
+          <EmptyHeader>
+            <EmptyTitle>검증 서버에 연결하세요</EmptyTitle>
+            <EmptyDescription>
+              설정에서 서버에 연결하면 프로젝트를 관리하고 검증을 실행할 수 있습니다.
+            </EmptyDescription>
+          </EmptyHeader>
+          <Button asChild>
+            <Link to="/dashboard/settings#server-connection">
+              서버 연결 설정
+              <ArrowRight data-icon="inline-end" />
+            </Link>
+          </Button>
+        </Empty>
       )}
       {error && (
         <Alert variant="destructive">
@@ -117,12 +133,6 @@ export function BackendWorkspace() {
   const [creating, setCreating] = useState(!!importId);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  let hasDrafts = false;
-  try {
-    hasDrafts = readProjects().length > 0;
-  } catch {
-    hasDrafts = true;
-  }
   async function create(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!api) return;
@@ -144,13 +154,10 @@ export function BackendWorkspace() {
     }
   }
   return (
-    <section className="flex min-w-0 flex-col gap-5">
+    <section className="flex min-h-[calc(100svh-8rem)] min-w-0 flex-col gap-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="type-heading-xl">프로젝트</h1>
-          <p className="mt-2 type-body-md text-interface-secondary">
-            의존성 업데이트의 빌드와 업무 동작을 검증합니다.
-          </p>
         </div>
         <Button
           disabled={!api || loading}
@@ -159,7 +166,9 @@ export function BackendWorkspace() {
           <Plus data-icon="inline-start" />새 프로젝트
         </Button>
       </div>
-      <BackendConnection />
+      <div className={!api ? "flex flex-1 flex-col justify-center" : undefined}>
+        <BackendConnection />
+      </div>
       {creating && api && (
         <Card variant="panel">
           <CardHeader className="px-5 py-4 md:px-5">
@@ -269,24 +278,6 @@ export function BackendWorkspace() {
             </EmptyDescription>
           </EmptyHeader>
         </Empty>
-      )}
-      <Separator />
-      <div className="flex flex-wrap items-center justify-between gap-3 type-body-sm text-interface-secondary">
-        <span>연결 없이 화면을 둘러볼 수 있습니다.</span>
-        <Button variant="outline" asChild>
-          <Link to={projectHref("python-uv-demo", "results")}>
-            화면 예시
-            <ArrowRight data-icon="inline-end" />
-          </Link>
-        </Button>
-      </div>
-      {hasDrafts && (
-        <Link
-          className="w-fit rounded-sm type-body-sm text-interface-secondary underline underline-offset-4 focus-control"
-          to="/dashboard?mode=drafts"
-        >
-          기존 브라우저 초안
-        </Link>
       )}
     </section>
   );

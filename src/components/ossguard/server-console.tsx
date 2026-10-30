@@ -328,12 +328,6 @@ export function ServerConsole({ id }: { id: string }) {
               }[tab]
             }
           </h1>
-          {tab !== "results" && (
-            <p className="break-all type-body-sm text-interface-secondary">
-              {project.repository_url.replace("https://github.com/", "")} ·{" "}
-              {project.ref}
-            </p>
-          )}
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {tab === "results" && (
@@ -441,6 +435,7 @@ export function ServerConsole({ id }: { id: string }) {
           projectId={id}
           suite={suite}
           rule={rule}
+          inputSchema={project.rules.input_schema}
           dirty={dirty}
           onChange={(value) => {
             setSuite(value);

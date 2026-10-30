@@ -8,7 +8,7 @@ import {
 } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { BackendProvider } from "./backend-context";
-import { BackendWorkspace } from "./backend-workspace";
+import { BackendConnection, BackendWorkspace } from "./backend-workspace";
 import { ServerConsole } from "./server-console";
 import { ServerTests } from "./server-tests";
 import { GuardApi } from "./api";
@@ -114,12 +114,11 @@ it("connects using a session-only bearer token and never stores it in local stor
   render(
     <MemoryRouter>
       <BackendProvider>
-        <BackendWorkspace />
+        <BackendConnection settings />
       </BackendProvider>
     </MemoryRouter>,
   );
-  expect(screen.getByRole("button", { name: "새 프로젝트" })).toBeDisabled();
-  fireEvent.change(screen.getByLabelText("팀 토큰"), {
+  fireEvent.change(screen.getByLabelText("서버 접근 키"), {
     target: { value: "test-token" },
   });
   fireEvent.click(screen.getByRole("button", { name: "서버 연결" }));
