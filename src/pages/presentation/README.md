@@ -18,7 +18,7 @@ Copy follows the project specification in `docs/OSSGuard_MVP_구현계획_기능
 - Arrow keys, Page Up/Down and Space move between slides; Home/End jump to the first/last.
 - Hash navigation, outline, document fullscreen and keyboard focus behavior are preserved.
 - Controls appear at the bottom edge or on keyboard focus. No persistent corner labels, footer, progress bar or print/export control.
-- Slide 12 opens the landing or the existing dashboard example in new tabs.
+- Slide 12 opens the landing, the existing dashboard example or the supplied YouTube demo video in new tabs.
 - Slide 4 uses native tabs to compare paid/unpaid orders. Tab arrow keys stay local to the example. This state stays in memory; no job is submitted and no workspace data is written.
 
 ## Visuals

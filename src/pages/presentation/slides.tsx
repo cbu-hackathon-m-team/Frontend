@@ -1,6 +1,6 @@
 /* eslint shadcn/require-static-classes: "off" -- Scoped slide compositions; shared UI retains its component variants. */
 import { memo, type ReactNode } from "react";
-import { ArrowRight, ArrowUpRight, Check, FileDiff, GitBranch, ListChecks, Mail, Package, Truck } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Check, FileDiff, GitBranch, ListChecks, Mail, Package, Play, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import styles from "./presentation.module.css";
@@ -124,6 +124,6 @@ export const SlideContent = memo(function SlideContent({ id }: { id: Slide["id"]
       <ol className={styles["ppt-scope-flow"]} aria-label="OSSGuard의 검증 흐름">{["버전 선택", "라이브러리 변경", "빌드·실행", "업무 결과 확인"].map((label, index) => <li key={label}><div><span>{String(index + 1).padStart(2, "0")}</span><strong>{label}</strong></div>{index < 3 && <ArrowRight aria-hidden="true" />}</li>)}</ol>
       <div className={styles["ppt-scope-columns"]}><div><h3>첫 MVP</h3><ul><li>설정이 준비된 Python 공개 프로젝트</li><li>직접 사용하는 라이브러리 하나를 업데이트</li><li>같은 요청으로 응답·외부 호출 비교</li></ul></div><div><h3>이후 확장</h3><ul><li>다른 언어와 패키지 관리 환경</li><li>실행 방식과 검사 항목 확대</li></ul></div></div>
     </div>;
-    case "closing": return <div className={styles["ppt-closing"]}><div className={styles["ppt-message"]}><h2>업데이트해도 괜찮은지,<br />감이 아닌 근거로<br /><em>OSSGuard</em></h2><p>{slide.summary}</p><div className={styles["ppt-demo-actions"]}><Button variant="secondary" size="lg" asChild><a href="/" target="_blank" rel="noopener noreferrer">서비스 소개 <ArrowUpRight data-icon="inline-end" /></a></Button><Button variant="secondary" size="lg" asChild><a href="/dashboard?project=python-uv-demo&tab=results" target="_blank" rel="noopener noreferrer">결과 화면 예시 <ArrowRight data-icon="inline-end" /></a></Button></div></div></div>;
+    case "closing": return <div className={styles["ppt-closing"]}><div className={styles["ppt-message"]}><h2>업데이트해도 괜찮은지,<br />감이 아닌 근거로<br /><em>OSSGuard</em></h2><p>{slide.summary}</p><div className={styles["ppt-demo-actions"]}><Button variant="secondary" size="lg" asChild><a href="/" target="_blank" rel="noopener noreferrer">서비스 소개 <ArrowUpRight data-icon="inline-end" /></a></Button><Button variant="secondary" size="lg" asChild><a href="/dashboard?project=python-uv-demo&tab=results" target="_blank" rel="noopener noreferrer">결과 화면 예시 <ArrowRight data-icon="inline-end" /></a></Button><Button variant="secondary" size="lg" asChild><a href="https://youtu.be/A65hVv9CT7o" target="_blank" rel="noopener noreferrer"><Play data-icon="inline-start" /> 시연 영상</a></Button></div></div></div>;
   }
 });
