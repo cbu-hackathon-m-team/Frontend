@@ -138,6 +138,7 @@ export interface RunEvidence {
 }
 
 const messages: Record<string, string> = {
+  PROJECT_BUSY: "검증 실행·자원 정리·결과 처리가 끝난 뒤 삭제할 수 있습니다.",
   UNAUTHORIZED: "팀 토큰을 확인해 다시 연결하세요.",
   AUTH_NOT_CONFIGURED: "서버의 팀 인증이 설정되지 않았습니다.",
   REPOSITORY_DENIED: "서버의 허용 목록에 등록된 저장소를 사용하세요.",

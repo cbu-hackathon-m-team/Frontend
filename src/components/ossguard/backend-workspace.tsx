@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowRight, Plus, RefreshCw } from "lucide-react";
+import { ArrowRight, MoreHorizontal, Plus, RefreshCw, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,6 +24,8 @@ import { projectHref } from "./model";
 import { selectedProject } from "./demo-project";
 import { readDraft } from "./draft";
 import { purchaseDemo } from "./execution-defaults";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 export function BackendConnection({ settings = false }: { settings?: boolean }) {
   const { api, loading, error, connect, disconnect, refresh } = useBackend();
@@ -133,6 +135,23 @@ export function BackendWorkspace() {
   const [creating, setCreating] = useState(!!importId);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [deleting, setDeleting] = useState<ApiProject | null>(null);
+  const [deleteBusy, setDeleteBusy] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+  async function removeProject() {
+    if (!api || !deleting || deleteBusy) return;
+    setDeleteBusy(true);
+    setDeleteError("");
+    try {
+      await api.request(`/api/projects/${encodeURIComponent(deleting.id)}`, "DELETE");
+      setDeleting(null);
+      await refresh();
+    } catch (e) {
+      setDeleteError(errorText(e));
+    } finally {
+      setDeleteBusy(false);
+    }
+  }
   async function create(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!api) return;
@@ -242,7 +261,8 @@ export function BackendWorkspace() {
           {projects.map((p) => (
             <Card variant="panel" key={p.id} className="min-w-0">
               <CardHeader className="px-5 py-4 md:px-5">
-                <CardTitle>
+                <div className="flex min-w-0 items-start justify-between gap-3">
+                <CardTitle className="flex-1">
                   <Link
                     className="focus-control rounded-sm"
                     to={projectHref(p.id)}
@@ -250,6 +270,19 @@ export function BackendWorkspace() {
                     {p.name}
                   </Link>
                 </CardTitle>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon-sm" aria-label={`${p.name} 프로젝트 메뉴`}>
+                      <MoreHorizontal aria-hidden="true" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem variant="destructive" onSelect={() => { setDeleteError(""); setDeleting(p); }}>
+                      <Trash2 aria-hidden="true" />프로젝트 삭제
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                </div>
                 <p className="break-all type-body-sm text-interface-secondary">
                   {p.repository_url.replace("https://github.com/", "")}
                 </p>
@@ -279,6 +312,23 @@ export function BackendWorkspace() {
           </EmptyHeader>
         </Empty>
       )}
+      <AlertDialog open={!!deleting} onOpenChange={(open) => { if (!open && !deleteBusy) setDeleting(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>프로젝트를 삭제할까요?</AlertDialogTitle>
+            <AlertDialogDescription>
+              ‘{deleting?.name}’ 프로젝트와 저장된 테스트·검증 기록이 모두 삭제됩니다. 삭제 후에는 복구할 수 없습니다.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          {deleteError && <Alert variant="destructive"><AlertDescription>{deleteError}</AlertDescription></Alert>}
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteBusy}>취소</AlertDialogCancel>
+            <Button variant="destructive" disabled={deleteBusy} onClick={() => void removeProject()}>
+              {deleteBusy ? "삭제 중…" : "프로젝트 삭제"}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </section>
   );
 }

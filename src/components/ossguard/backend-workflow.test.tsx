@@ -13,6 +13,7 @@ import { ServerConsole } from "./server-console";
 import { ServerTests } from "./server-tests";
 import { GuardApi } from "./api";
 import { purchaseDemo } from "./execution-defaults";
+import userEvent from "@testing-library/user-event";
 import {
   apiProject,
   apiRun,
@@ -26,6 +27,51 @@ import {
 beforeEach(() => {
   localStorage.clear();
   sessionStorage.clear();
+});
+
+it("requires confirmation before deleting a server project and refreshes the list", async () => {
+  sessionStorage.setItem("ossguard.api-session", "test-token");
+  let removed = false;
+  const fetcher = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    const path = String(input);
+    if (init?.method === "DELETE") {
+      expect(path).toBe(`/api/projects/${projectId}`);
+      removed = true;
+      return jsonResponse({ id: projectId });
+    }
+    return jsonResponse(removed ? [] : [apiProject]);
+  });
+  vi.stubGlobal("fetch", fetcher);
+  render(<MemoryRouter><BackendProvider><BackendWorkspace /></BackendProvider></MemoryRouter>);
+  const user = userEvent.setup();
+  const menu = await screen.findByRole("button", { name: `${apiProject.name} 프로젝트 메뉴` });
+  await user.click(menu);
+  await user.click(screen.getByRole("menuitem", { name: "프로젝트 삭제" }));
+  expect(removed).toBe(false);
+  await user.click(screen.getByRole("button", { name: "취소" }));
+  expect(removed).toBe(false);
+  await user.click(menu);
+  await user.click(screen.getByRole("menuitem", { name: "프로젝트 삭제" }));
+  await user.click(screen.getByRole("button", { name: "프로젝트 삭제" }));
+  expect(await screen.findByText("첫 저장소를 등록하세요")).toBeInTheDocument();
+  expect(removed).toBe(true);
+});
+
+it("keeps the project and dialog when the server refuses deletion", async () => {
+  sessionStorage.setItem("ossguard.api-session", "test-token");
+  vi.stubGlobal("fetch", vi.fn(async (_: RequestInfo | URL, init?: RequestInit) =>
+    init?.method === "DELETE"
+      ? jsonResponse({ error: { code: "PROJECT_BUSY", message: "busy" } }, 409)
+      : jsonResponse([apiProject])));
+  render(<MemoryRouter><BackendProvider><BackendWorkspace /></BackendProvider></MemoryRouter>);
+  const user = userEvent.setup();
+  await user.click(await screen.findByRole("button", { name: `${apiProject.name} 프로젝트 메뉴` }));
+  await user.click(screen.getByRole("menuitem", { name: "프로젝트 삭제" }));
+  await user.click(screen.getByRole("button", { name: "프로젝트 삭제" }));
+  expect(await screen.findByText("검증 실행·자원 정리·결과 처리가 끝난 뒤 삭제할 수 있습니다.")).toBeInTheDocument();
+  expect(screen.getByRole("alertdialog")).toBeInTheDocument();
+  await user.click(screen.getByRole("button", { name: "취소" }));
+  expect(screen.getByRole("link", { name: apiProject.name })).toBeInTheDocument();
 });
 afterEach(() => {
   cleanup();
